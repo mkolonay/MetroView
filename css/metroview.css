@@ -1,0 +1,81 @@
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow:scroll;
+}
+
+#layoutContainer {
+    width: 100%;
+    height: 100%;
+}
+
+
+.filterRanges {
+    /*float:left;*/
+    margin-bottom: 5px;
+    margin-top: 5px;
+
+}
+
+.filterBottom{
+    width: 75px;
+    margin-right: 0px;
+}
+
+.filterTop{
+    width: 75px;
+    margin-left: 0px;
+}
+
+.filterRangesName{
+    font-weight: bold;
+}
+
+.dgrid-selected {
+    background-color: #ffffff;
+}
+
+.mapTitlepane{
+
+    /*height: 800px;*/
+}
+
+.mapBorderContainer{
+
+    height: 700px;
+    width:100%;
+}
+
+.map {
+
+    height:600px
+}
+
+.filterTextBoxRanges{
+    height: 300px;
+}
+
+.parcelTitleBarCharts{
+    font-size: x-large;
+    text-align: center;
+    background-color: #428bca;
+    color: white;
+    margin-bottom: 15px;
+}
+
+.bufferDistanceInput{
+    width: 50px;
+}
+
+.bufferDistanceContainer{}
+
+.bufferDistanceLabel{}
+
+.bufferDistanceTextBoxContainer{
+}
+
+.tundra .dijitTab{
+    background:none;
+    color:white;
+}

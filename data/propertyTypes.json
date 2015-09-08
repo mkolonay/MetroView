@@ -1,0 +1,13 @@
+[
+  {"propertyType":"Single Family","id":"1"},
+  {"propertyType":"Vacant","id":"2"},
+  {"propertyType":"Rural","id":"3"},
+  {"propertyType":"SFLL","id":"4"},
+  {"propertyType":"Other","id":"5"},
+  {"propertyType":"Public or Semi Public","id":"6"},
+  {"propertyType":"Business","id":"7"},
+  {"propertyType":"Multi Family","id":"8"},
+  {"propertyType":"Industrial","id":"9"},
+  {"propertyType":"Water","id":"10"},
+  {"propertyType":"Other Residential","id":"11"}
+]

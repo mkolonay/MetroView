@@ -1,0 +1,145 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="./images/favicon.ico">
+
+    <title>CURA MetroTracker</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+    <!-- Custom styles for this template -->
+    <link href="./css/dashboard.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+    <!--<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>-->
+    <!--<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>-->
+    <![endif]-->
+
+    <link rel="stylesheet" href="http://js.arcgis.com/3.14/dojo/resources/dojo.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.14/dijit/themes/tundra/tundra.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.14/esri/css/esri.css">
+
+    <link rel="stylesheet" href="http://dgrid.io/js/dgrid/css/columnset.css">
+    <link rel="stylesheet" href="http://dgrid.io/js/dgrid/css/dgrid.css">
+
+
+    <link rel="stylesheet" href="css/metroview.css" />
+    <script>dojoConfig = { parseOnLoad: true,
+        packages: [
+            {
+                name: 'dgrid',
+                location: '//cdn.rawgit.com/SitePen/dgrid/v0.4.0'
+            },
+            {
+                name: 'dstore',
+                location: '//cdn.rawgit.com/SitePen/dstore/v1.0.0'
+            }
+        ]
+    }</script>
+    <script src="http://js.arcgis.com/3.14/"></script>
+    <script src="js/metroview.js"></script>
+
+</head>
+
+<body class="tundra">
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">CURA MetroTracker</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="#">Dashboard</a></li>
+                <li><a href="#">Settings</a></li>
+                <li><a href="#">Profile</a></li>
+                <li><a href="#">Help</a></li>
+            </ul>
+            <form class="navbar-form navbar-right">
+                <!--<input type="text" class="form-control" placeholder="Search...">-->
+                <div id="search"></div>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+            <ul class="nav nav-sidebar">
+                <li class="active"><a href="#">Filters<span class="sr-only">(current)</span></a></li>
+                <li><div id="filterContainer"></div></li>
+            </ul>
+
+
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            <h1 class="page-header">Dashboard</h1>
+
+            <h2 class="sub-header">Map Section</h2>
+
+            <div id="mapTitlePane" data-dojo-type="dijit/TitlePane" data-dojo-props="title: 'MetroView Map','class':'mapTitlepane'">
+
+                <div style="position:absolute; right:100px; top:200px; z-Index:999;">
+                    <div data-dojo-type="dijit/TitlePane" data-dojo-props="title:'Switch Basemap', closable:false, open:false">
+                        <div data-dojo-type="dijit/layout/ContentPane" style="width:380px; height:280px; overflow:auto;">
+                            <div id="basemapGallery"></div>
+                        </div>
+                    </div>
+                    <div data-dojo-type="dijit/TitlePane" data-dojo-props="title:'Map Legend', closable:false, open:false">
+                        <div data-dojo-type="dijit/layout/ContentPane" style="width:380px; height:280px; overflow:auto;">
+                            <div id="legendDiv"></div>
+                        </div>
+                    </div>
+                    <div data-dojo-type="dijit/TitlePane" data-dojo-props="title:'Map Features', closable:false, open:false">
+                        <div data-dojo-type="dijit/layout/ContentPane" style="width:380px; height:280px; overflow:auto;">
+                            <div id="featuresDiv"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="sub-header">Results Section</h2>
+            <div id="resultsTitlePane" data-dojo-type="dijit/TitlePane" data-dojo-props="title: 'MetroView Results'">
+                <div id="resultsTabContainer"></div>
+            </div>
+
+
+            <h2 class="sub-header">To Do:</h2>
+            <ul>
+                <li>In each result section list filters that were active</li>
+                <li>Clean up UX - CURA colors? Other copy they want in the page? I'm not sold on some of the filter aesthetics</li>
+                <li>Improve map experience - limit parcel view scale - maybe caching? Symbol levels?</li>
+                <li>Test adding labor data to framework</li>
+                <li>CSS for print pages</li>
+                <li>wire up regional selection option</li>
+                <li>Move poly draw and search results into results count</li>
+                <li>Add Overlay features to map</li>
+                <li>Clean up numbers in charts</li>
+                <li>Zoom to select polygon when tab is selected</li>
+                <li>Test in GitHub</li>
+                <li>Test in GitHub</li>
+                <li>Another test</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+
+</body>
+</html>
