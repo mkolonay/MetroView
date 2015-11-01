@@ -57,6 +57,7 @@
   "dojox/charting/action2d/Tooltip",//57
   "dojox/charting/widget/Legend", //58
   "dojox/charting/action2d/Magnify", //59
+  "dojox/charting/action2d/MoveSlice",//59.1
   "dojox/charting/plot2d/ClusteredColumns",//60
   "dojox/charting/action2d/Highlight",//61
   "dijit/form/HorizontalSlider",//62
@@ -64,8 +65,16 @@
   "dijit/layout/TabContainer",//64
   "dojo/dom-style",//65
   "dijit/registry",//66
+  "dojo/DeferredList",//67
+  "dijit/Dialog",//68
+  "esri/geometry/geometryEngine",//69
+  "dijit/TooltipDialog",//70
+  "dijit/popup",//71
+  "dojo/html",//72
+  "dojox/charting/plot2d/Bubble",//73
   "dojox/charting/plot2d/Markers",
   "dojox/charting/axis2d/Default",
+
   "dojo/domReady!"
 
 
@@ -73,71 +82,79 @@
 
 
 ], function (
-  Map,//1
-  BasemapGallery,//2
-  arcgisUtils,//3
-  parser,//4
-  Search,//5
-  InfoTemplate,//7
-  SpatialReference,//8
-  Extent,//9
-  FeatureLayer,//10
-  Query,//11
-  Circle,//12
-  Graphic,//13
-  SimpleMarkerSymbol,//14
-  SimpleLineSymbol,//15
-  SimpleFillSymbol,//16
-  SimpleRenderer,//17
-  config,//18
-  Color,//19
-  dom,//20
-  GeometryService,//21
-  ArcGISDynamicMapServiceLayer,//22
-  BorderContainer,//23
-  ContentPane,//24
-  TitlePane,//25
-  lang,//26
-  Select,//27
-  Point,//28
-  Draw,//29
-  Button,//30
-  ImageParameters,//31
-  QueryTask,//32
-  StatisticDefinition,//33
-  CheckBox,//34
-  VerticalSlider,//35
-  VerticalRuleLabels,//36 
-  VerticalRule,//37
-  domConstruct,//38
-  aspect,//39
-  on,//40
-  array,//41
-  TextBox,//42
-  MultiSelect,//43
-  declare,//44
-  OnDemandGrid,//45
-  Selection,//46
-  Selector,//47
-  Grid,//48
-  RequestMemory,//49
-  Memory,//50
-  ColumnHider,//51
-  number,//52
-  Chart,//53
-  theme, //54
-  PiePlot ,//55
-  StoreSeries,//56
-  Tooltip,//57
-  Legend, //58
-  Magnify, //59
-  ColumnsPlot, //60
-  Highlight,//61
-  HorizontalSlider,//62
-  esri_Legend,//63
-  TabContainer,//64
-  domStyle,//65
-  registry//66
+    Map,//1
+    BasemapGallery,//2
+    arcgisUtils,//3
+    parser,//4
+    Search,//5
+    InfoTemplate,//7
+    SpatialReference,//8
+    Extent,//9
+    FeatureLayer,//10
+    Query,//11
+    Circle,//12
+    Graphic,//13
+    SimpleMarkerSymbol,//14
+    SimpleLineSymbol,//15
+    SimpleFillSymbol,//16
+    SimpleRenderer,//17
+    config,//18
+    Color,//19
+    dom,//20
+    GeometryService,//21
+    ArcGISDynamicMapServiceLayer,//22
+    BorderContainer,//23
+    ContentPane,//24
+    TitlePane,//25
+    lang,//26
+    Select,//27
+    Point,//28
+    Draw,//29
+    Button,//30
+    ImageParameters,//31
+    QueryTask,//32
+    StatisticDefinition,//33
+    CheckBox,//34
+    VerticalSlider,//35
+    VerticalRuleLabels,//36
+    VerticalRule,//37
+    domConstruct,//38
+    aspect,//39
+    on,//40
+    array,//41
+    TextBox,//42
+    MultiSelect,//43
+    declare,//44
+    OnDemandGrid,//45
+    Selection,//46
+    Selector,//47
+    Grid,//48
+    RequestMemory,//49
+    Memory,//50
+    ColumnHider,//51
+    number,//52
+    Chart,//53
+    theme, //54
+    PiePlot ,//55
+    StoreSeries,//56
+    Tooltip,//57
+    Legend, //58
+    Magnify, //59
+    MoveSlice,//59.1
+    ColumnsPlot, //60
+    Highlight,//61
+    HorizontalSlider,//62
+    esri_Legend,//63
+    TabContainer,//64
+    domStyle,//65
+    registry,//66
+    DeferredList,//67
+    Dialog,//68
+    geometryEngine,//69
+    TooltipDialog,//70
+    popup,//71
+    html,//72
+    Bubble//73
 ) {
 
 
@@ -148,37 +165,48 @@
         _filterPane:{},
         _toolbar: null,
         _queryTask: {},
+        _queryTaskHHIncome:{},
+        _queryTaskEmployment:{},
         _parcelWhereClause:"",
         _verticalSlider:{},
         _selectionTypeDropdown: {},
         _parcelDynamicMapServiceLayer: {},
+        _localityFeatureLayer:{},
         _filterGraphics:[],
+        _localitiesPreCommitIDs:[],
+        _localitiesPreCommitGraphics:{},
         _filterGraphicsCount:0,
         _colors:[
             [249, 255, 96],//yellow
             [255, 56, 82],//red
             [12, 255, 45],//greenish
-            [114, 0, 255],//purples
+            [114, 0, 255]//purples
         ],
         _colors_Alpha:[
             [249, 255, 96,.25],//yellow
             [255, 56, 82,.25],//red
             [12, 255, 45,.25],//greenish
-            [114, 0, 255,.25],//purples
+            [114, 0, 255,.25]//purples
         ],
         _filterWhereClauses: {},
         _parcelPropertyTypesGrid:{},
-        _resultsGrid:[],
-        _resultsdStore:[],
+        _resultsParcelGrid:[],
+        _resultsHHIncomeGrid:[],
+        _resultsEmploymentGrid:[],
+        _resultsParceldStore:[],
+        _resultsHHIncomedStore:[],
+        _resultsEmploymentdStore:[],
         _parcelFilters: [
             {
                 "fieldName": "VMP_P1_V12",
+                "shortFieldName":"VMP_P1_V12",
                 "filterType": "choices",
                 "filterOptions": [
                     {"propertyType":"Single Family","id":"0"},
                     {"propertyType":"Vacant","id":"1"},
                     {"propertyType":"Rural","id":"2"},
-                    {"propertyType":"SFLL","id":"3"},
+                    //{"propertyType":"SFLL","id":"3"},
+                    {"propertyType":"Single Family Large Lot","id":"3"},
                     {"propertyType":"Other","id":"4"},
                     {"propertyType":"Public or Semi Public","id":"5"},
                     {"propertyType":"Business","id":"6"},
@@ -192,10 +220,14 @@
                 "filterIncrement": "",
                 "filterDescription": "-New Land Use. The 22 land uses were broken down into 11.",
                 "filterDisplayName": "Land Use - New",
-                "filterGroup":"parcelPropertyType"
+                "filterGroup":"parcelPropertyType",
+                "hidden":false,
+                "doNotDisplayAtAll":false,
+                "calculated":false
             },
             {
                 "fieldName": "VMP_P1_V3",
+                "shortFieldName": "VMP_P1_V3",
                 "filterType": "range",
                 "filterOptions": [],
                 "filterRangeTop": "",
@@ -203,10 +235,15 @@
                 "filterIncrement": "",
                 "filterDescription": "-Construction Year",
                 "filterDisplayName": "Construction Year",
-                "filterGroup":"parcelAttributeChoices"
+                "renderCellFunctionReference":"_constructionYearCalc",
+                "filterGroup":"parcelAttributeChoices",
+                "hidden":false,
+                "doNotDisplayAtAll":false,
+                "calculated":false
             },
             {
                 "fieldName": "VMP_P1_V4",
+                "shortFieldName": "VMP_P1_V4",
                 "filterType": "range",
                 "filterOptions": [],
                 "filterRangeTop": "",
@@ -214,11 +251,15 @@
                 "filterIncrement": "",
                 "filterDescription": "-Land Value",
                 "filterDisplayName": "Land Value",
-                "renderCellFunctionReference":"_addComma",
-                "filterGroup":"parcelAttributeChoices"
+                "renderCellFunctionReference":"_landValueCalc",
+                "filterGroup":"parcelAttributeChoices",
+                "hidden":false,
+                "doNotDisplayAtAll":false,
+                "calculated":true
             },
             {
                 "fieldName": "VMP_P1_V5",
+                "shortFieldName": "VMP_P1_V5",
                 "filterType": "range",
                 "filterOptions": [],
                 "filterRangeTop": "",
@@ -226,11 +267,63 @@
                 "filterIncrement": "",
                 "filterDescription": "-Building/Improvements Value",
                 "filterDisplayName": "Building/Improvements Value",
-                "renderCellFunctionReference":"_addComma",
-                "filterGroup":"parcelAttributeChoices"
+                "renderCellFunctionReference":"_buildingImprovementsValueCalc",
+                "filterGroup":"parcelAttributeChoices",
+                "hidden":false,
+                "doNotDisplayAtAll":false,
+                "calculated":true
+            },
+            {
+                "fieldName": "VMP_P1_V3_NotNull",
+                "shortFieldName": "VMP_P1_V3_NotNull",
+                "filterType": "range",
+                "filterOptions": [],
+                "filterRangeTop": "",
+                "filterRangeBottom": "",
+                "filterIncrement": "",
+                "filterDescription": "-Construction Year",
+                "filterDisplayName": "Construction Year",
+                "renderCellFunctionReference":"",
+                "filterGroup":"parcelAttributeChoices",
+                "hidden":true,
+                "doNotDisplayAtAll":true,
+                "calculated":false
+            },
+            {
+                "fieldName": "VMP_P1_V4_NotNull",
+                "shortFieldName": "VMP_P1_V4_NotNull",
+                "filterType": "range",
+                "filterOptions": [],
+                "filterRangeTop": "",
+                "filterRangeBottom": "",
+                "filterIncrement": "",
+                "filterDescription": "-Land Value",
+                "filterDisplayName": "Land Value",
+                "renderCellFunctionReference":"",
+                "filterGroup":"parcelAttributeChoices",
+                "hidden":true,
+                "doNotDisplayAtAll":true,
+                "calculated":false
+            },
+            {
+                "fieldName": "VMP_P1_V5_NotNull",
+                "shortFieldName": "VMP_P1_V5_NotNull",
+                "filterType": "range",
+                "filterOptions": [],
+                "filterRangeTop": "",
+                "filterRangeBottom": "",
+                "filterIncrement": "",
+                "filterDescription": "-Building/Improvements Value",
+                "filterDisplayName": "Building/Improvements Value",
+                "renderCellFunctionReference":"",
+                "filterGroup":"parcelAttributeChoices",
+                "hidden":true,
+                "doNotDisplayAtAll":true,
+                "calculated":false
             },
             {
                 "fieldName": "VMP_P1_V6",
+                "shortFieldName": "VMP_P1_V6",
                 "filterType": "range",
                 "filterOptions": [],
                 "filterRangeTop": "",
@@ -239,10 +332,14 @@
                 "filterDescription": "-Parcel Sq. Ft",
                 "filterDisplayName": "Parcel Sq. Ft",
                 "renderCellFunctionReference":"_addComma",
-                "filterGroup":"parcelAttributeChoices"
+                "filterGroup":"parcelAttributeChoices",
+                "hidden":false,
+                "doNotDisplayAtAll":false,
+                "calculated":false
             },
             {
                 "fieldName": "VMP_P1_V7",
+                "shortFieldName": "VMP_P1_V7",
                 "filterType": "range",
                 "filterOptions": [],
                 "filterRangeTop": "",
@@ -250,95 +347,953 @@
                 "filterIncrement": "",
                 "filterDescription": "Parcel Acreage",
                 "filterDisplayName": "Parcel Acreage",
-                "renderCellFunctionReference":"_addComma",
-                "filterGroup":"parcelAttributeChoices"
+                "renderCellFunctionReference":"_addComma2",
+                "filterGroup":"parcelAttributeChoices",
+                "hidden":false,
+                "doNotDisplayAtAll":false,
+                "calculated":false
             }
         ],
+        _hHIncomeFilters: [
+            {
+                "fieldName": "Population_Estimate_Total",
+                "shortFieldName": "Population_Estimate_Total",
+                "filterType": "range",
+                "filterOptions": [],
+                "filterRangeTop": "",
+                "filterRangeBottom": "",
+                "filterIncrement": "",
+                "filterDescription": "Population_Estimate_Total ",
+                "filterDisplayName": "Population Estimate",
+                "renderCellFunctionReference":"_addComma",
+                "filterGroup":"hHIncomeAttributeChoices",
+                "hidden":false,
+                "doNotDisplayAtAll":false,
+                "calculated":false
+            },
+            {
+            "fieldName": "Households_Estimate_Total",
+            "shortFieldName":"Households_Estimate_Total",
+            "filterType": "range",
+            "filterOptions": [],
+            "filterRangeTop": "",
+            "filterRangeBottom": "",
+            "filterIncrement": "",
+            "filterDescription": "Households_Estimate_Total ",
+            "filterDisplayName": "Households Estimate",
+            "renderCellFunctionReference":"_addComma",
+            "filterGroup":"hHIncomeAttributeChoices",
+            "hidden":false,
+            "doNotDisplayAtAll":false,
+            "calculated":false
+    },
+            {
+            "fieldName": "Median_HHI_Weight",
+            "shortFieldName":"Median_HHI_Weight",
+            "filterType": "range",
+            "filterOptions": [],
+            "filterRangeTop": "",
+            "filterRangeBottom": "",
+            "filterIncrement": "",
+            "filterDescription": "Median_HHI_Weight",
+            "filterDisplayName": "Median_HHI_Weight",
+            "renderCellFunctionReference":"_addComma",
+            "filterGroup":"hHIncomeAttributeChoices",
+            "hidden":true,
+            "doNotDisplayAtAll":true,
+            "calculated":false
+        },
+            {
+                "fieldName": "Households_BelowPovertyLevel",
+                "shortFieldName": "HouseholdsBelowPoverty",
+                "filterType": "range",
+                "filterOptions": [],
+                "filterRangeTop": "",
+                "filterRangeBottom": "",
+                "filterIncrement": "",
+                "filterDescription": "Households_BelowPovertyLevel  ",
+                "filterDisplayName": "Households Below Poverty Level",
+                "renderCellFunctionReference":"_addComma",
+                "filterGroup":"hHIncomeAttributeChoices",
+                "hidden":false,
+                "doNotDisplayAtAll":false,
+                "calculated":false
+            },
+            {
+                "fieldName": "Households_PercentBelowPoverty",
+                "shortFieldName": "Households_PercentBelowPoverty",
+                "filterType": "range",
+                "filterOptions": [],
+                "filterRangeTop": "",
+                "filterRangeBottom": "",
+                "filterIncrement": "",
+                "filterDescription": "Households_PercentBelowPoverty",
+                "filterDisplayName": "Percent Households Below Poverty Level",
+                "renderCellFunctionReference":"_calculatePercentHHBelowPoverty",
+                "filterGroup":"hHIncomeAttributeChoices",
+                "hidden":false,
+                "doNotDisplayAtAll":false,
+                "calculated":true
+            },
+            {
+                "fieldName": "Households_MedianIncome",
+                "shortFieldName": "Households_MedianIncome",
+                "filterType": "range",
+                "filterOptions": [],
+                "filterRangeTop": "",
+                "filterRangeBottom": "",
+                "filterIncrement": "",
+                "filterDescription": "Households_MedianIncome  ",
+                "filterDisplayName": "Households Median Income  ",
+                "renderCellFunctionReference":"_calculateMedianHHIncome",
+                "filterGroup":"hHIncomeAttributeChoices",
+                "hidden":false,
+                "doNotDisplayAtAll":false,
+                "calculated":true
+            }
+
+        ],
+        _employmentFilters: [
+   /* {
+        "fieldName": "Count_Establishments_AllSectors",
+        "shortFieldName": "CountAllSectors",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Establishments AllSectors",
+        "filterDisplayName": "All Sectors",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":false,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"establishments"
+    },
+    {
+        "fieldName": "avgemp_AllSectors",
+        "shortFieldName": "avgemp_AllSectors",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Employees: All Sectors",
+        "filterDisplayName": "All Sectors",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":false,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"Employees"
+    },*/
+    {
+        "fieldName": "Count_Establishments_Sector11",
+        "shortFieldName": "CountSector11",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Sector11",
+        "filterDisplayName": "Agriculture, Forestry, Fishing and Hunting",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"establishments"
+    },
+    {
+        "fieldName": "Sum_avgemp_Sector11",
+        "shortFieldName": "Sum_avgemp_Sector11",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Employees: Sector11",
+        "filterDisplayName": "Agriculture, Forestry, Fishing and Hunting1",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"Employees"
+    },
+    {
+        "fieldName": "Count_Establishments_Sector21",
+        "shortFieldName": "CountSector21",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Sector21",
+        "filterDisplayName": "Mining, Quarrying, and Oil and Gas Extraction",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"establishments"
+    },
+    {
+        "fieldName": "Sum_avgemp_Sector21",
+        "shortFieldName": "Sum_avgemp_Sector21",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Employees: Sector21",
+        "filterDisplayName": "Mining, Quarrying, and Oil and Gas Extraction",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"Employees"
+    },
+    {
+        "fieldName": "Count_Establishments_Sector23",
+        "shortFieldName": "CountSector23",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Sector23",
+        "filterDisplayName": "Construction",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"establishments"
+    },
+    {
+        "fieldName": "Sum_avgemp_Sector23",
+        "shortFieldName": "Sum_avgemp_Sector23",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Employees: Sector23",
+        "filterDisplayName": "Construction",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"Employees"
+    },
+    {
+        "fieldName": "Count_Establishments_Sector31_3",
+        "shortFieldName": "CountSector31_3",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Sector31_3",
+        "filterDisplayName": "Manufacturing",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"establishments"
+    },
+    {
+        "fieldName": "Sum_avgemp_Sector31_33",
+        "shortFieldName": "Sum_avgemp_Sector31_33",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Employees: Sector31_33",
+        "filterDisplayName": "Manufacturing",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"Employees"
+    },
+    {
+        "fieldName": "Count_Establishments_Sector42_4",
+        "shortFieldName": "CountSector42_4",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Sector42_4",
+        "filterDisplayName": "Wholesale Trade and Retail Trade",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"establishments"
+    },
+    {
+        "fieldName": "Sum_avgemp_Sector42_44_45",
+        "shortFieldName": "Sum_avgemp_Sector42_44_45",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Employees: Sector42_44_45",
+        "filterDisplayName": "Wholesale Trade and Retail Trade",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"Employees"
+    },
+    {
+        "fieldName": "Count_Establishments_Sector22_4",
+        "shortFieldName": "CountSector22_4",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Sector22_4",
+        "filterDisplayName": "Transportation, Warehousing, and Utilities",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"establishments"
+    },
+    {
+        "fieldName": "Sum_avgemp_Sector22_48_49",
+        "shortFieldName": "Sum_avgemp_Sector22_48_49",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Employees: Sector22_48_49",
+        "filterDisplayName": "Transportation, Warehousing, and Utilities",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"Employees"
+    },
+    {
+        "fieldName": "Count_Establishments_Sector51_5",
+        "shortFieldName": "CountSector51_5",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Sector51_5",
+        "filterDisplayName": "Information, Finance and Insurance, Real Estate, and Professional, Scientific, and Technical Services",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"establishments"
+    },
+    {
+        "fieldName": "Sum_avgemp_Sector51_52_53",
+        "shortFieldName": "Sum_avgemp_Sector51_52_53",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Employees: Sector51_52_53",
+        "filterDisplayName": "Information, Finance and Insurance, Real Estate, and Professional, Scientific, and Technical Services",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"Employees"
+    },
+    {
+        "fieldName": "Count_Establishments_Sector55_5",
+        "shortFieldName": "CountSector55_5",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Sector55_5",
+        "filterDisplayName": "Management of Companies and Enterprises, and Administrative Support, and Waste Management and Remediation Services",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"establishments"
+    },
+    {
+        "fieldName": "Sum_avgemp_Sector55_56",
+        "shortFieldName": "Sum_avgemp_Sector55_56",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Employees: Sector55_56",
+        "filterDisplayName": "Management of Companies and Enterprises, and Administrative Support, and Waste Management and Remediation Services",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"Employees"
+    },
+    {
+        "fieldName": "Count_Establishments_Sector61",
+        "shortFieldName": "CountSector61",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Sector61",
+        "filterDisplayName": "Educational Services",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"establishments"
+    },
+    {
+        "fieldName": "Sum_avgemp_Sector61",
+        "shortFieldName": "Sum_avgemp_Sector61",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Employees: Sector61",
+        "filterDisplayName": "Educational Services",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"Employees"
+    },
+    {
+        "fieldName": "Count_Establishments_Sector62",
+        "shortFieldName": "CountSector62",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Sector62",
+        "filterDisplayName": "Health Care and Social Assistance",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"establishments"
+    },
+    {
+        "fieldName": "Sum_avgemp_Sector62",
+        "shortFieldName": "Sum_avgemp_Sector62",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Employees: Sector62",
+        "filterDisplayName": "Health Care and Social Assistance",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"Employees"
+    },
+    {
+        "fieldName": "Count_Establishments_Sector71",
+        "shortFieldName": "CountSector71",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Sector71",
+        "filterDisplayName": "Arts, Entertainment, and Recreation",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"establishments"
+    },
+    {
+        "fieldName": "Sum_avgemp_Sector71",
+        "shortFieldName": "Sum_avgemp_Sector71",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Employees: Sector71",
+        "filterDisplayName": "Arts, Entertainment, and Recreation",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"Employees"
+    },
+    {
+        "fieldName": "Count_Establishments_Sector72",
+        "shortFieldName": "CountSector72",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Sector72",
+        "filterDisplayName": "Accommodation and Food Services",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"establishments"
+    },
+    {
+        "fieldName": "Sum_avgemp_Sector72",
+        "shortFieldName": "Sum_avgemp_Sector72",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Employees: Sector72",
+        "filterDisplayName": "Accommodation and Food Services",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"Employees"
+    },
+    {
+        "fieldName": "Count_Establishments_Sector81",
+        "shortFieldName": "CountSector81",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Sector81",
+        "filterDisplayName": "Other Services except Public Administration",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"establishments"
+    },
+    {
+        "fieldName": "Sum_avgemp_Sector81",
+        "shortFieldName": "Sum_avgemp_Sector81",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Employees: Sector81",
+        "filterDisplayName": "Other Services except Public Administration1",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"Employees"
+    },
+    {
+        "fieldName": "Count_Establishments_Sector92",
+        "shortFieldName": "CountSector92",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Sector92",
+        "filterDisplayName": "Public Administration",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"establishments"
+    },
+    {
+        "fieldName": "Sum_avgemp_Sector92",
+        "shortFieldName": "Sum_avgemp_Sector92",
+        "filterType": "range",
+        "filterOptions": [],
+        "filterRangeTop": "",
+        "filterRangeBottom": "",
+        "filterIncrement": "",
+        "filterDescription": "Employees: Sector92",
+        "filterDisplayName": "Public Administration2",
+        "renderCellFunctionReference":"_addComma",
+        "filterGroup":"employmentAttributeChoices",
+        "hidden":true,
+        "doNotDisplayAtAll":false,
+        "calculated":false,
+        "type":"Employees"
+    }
+],
         _parcelFilterKeys:{},
+        _hHIncomeFilterKeys:{},
+        _employmentFilterKeys:{},
         _parcelStatisticsDefinition:[],
+        _hHIncomeStatisticsDefinition:[],
+        _employmentStatisticsDefinition:[],
         _parcelGroupByFields:[],
+        _hHIncomeGroupByFields:[],
+        _employmentGroupByFields:[],
         _parcelDataGridColumns:{},
+        _hHIncomeDataGridColumns:{},
+        _hHIncomeExtraData:[{
+            "HouseholdsBelowPoverty_sum": 3202,
+            "Households_Estimate_Total_sum": 57586,
+            "Households_MedianIncome_sum": 6064433,
+            "Location": "Hanover",
+            "Median_HHI_Weight_sum": 4495354716,
+            "Population_Estimate_Total_sum": 155052
+        },
+            {
+                "HouseholdsBelowPoverty_sum": 22231,
+                "Households_Estimate_Total_sum": 109916,
+                "Households_MedianIncome_sum": 10105088,
+                "Location": "Richmond",
+                "Median_HHI_Weight_sum": 5493784336,
+                "Population_Estimate_Total_sum": 270596
+            },
+            {
+                "HouseholdsBelowPoverty_sum": 1182,
+                "Households_Estimate_Total_sum": 20705,
+                "Households_MedianIncome_sum": 2712234,
+                "Location": "Powhatan",
+                "Median_HHI_Weight_sum": 1953953789,
+                "Population_Estimate_Total_sum": 62652
+            },
+            {
+                "HouseholdsBelowPoverty_sum": 1477,
+                "Households_Estimate_Total_sum": 22555,
+                "Households_MedianIncome_sum": 3099597,
+                "Location": "Goochland",
+                "Median_HHI_Weight_sum": 2037125691,
+                "Population_Estimate_Total_sum": 61706
+            },
+            {
+                "HouseholdsBelowPoverty_sum": 1017,
+                "Households_Estimate_Total_sum": 15441,
+                "Households_MedianIncome_sum": 1507250,
+                "Location": "King William",
+                "Median_HHI_Weight_sum": 988096814,
+                "Population_Estimate_Total_sum": 41889
+            },
+            {
+                "HouseholdsBelowPoverty_sum": 15530,
+                "Households_Estimate_Total_sum": 154434,
+                "Households_MedianIncome_sum": 15336787,
+                "Location": "Henrico",
+                "Median_HHI_Weight_sum": 10822158005,
+                "Population_Estimate_Total_sum": 390364
+            },
+            {
+                "HouseholdsBelowPoverty_sum": 948,
+                "Households_Estimate_Total_sum": 15137,
+                "Households_MedianIncome_sum": 1525889,
+                "Location": "New Kent0",
+                "Median_HHI_Weight_sum": 1030288734,
+                "Population_Estimate_Total_sum": 39616
+            },
+            {
+                "HouseholdsBelowPoverty_sum": 828,
+                "Households_Estimate_Total_sum": 9210,
+                "Households_MedianIncome_sum": 1110278,
+                "Location": "Charles City",
+                "Median_HHI_Weight_sum": 637944503,
+                "Population_Estimate_Total_sum": 24172
+            },
+            {
+                "HouseholdsBelowPoverty_sum": 1053,
+                "Households_Estimate_Total_sum": 8183,
+                "Households_MedianIncome_sum": 834806,
+                "Location": "Sussex",
+                "Median_HHI_Weight_sum": 380633121,
+                "Population_Estimate_Total_sum": 24741
+            },
+            {
+                "HouseholdsBelowPoverty_sum": 1880,
+                "Households_Estimate_Total_sum": 12767,
+                "Households_MedianIncome_sum": 1044281,
+                "Location": "Hopewell",
+                "Median_HHI_Weight_sum": 621819108,
+                "Population_Estimate_Total_sum": 37504
+            },
+            {
+                "HouseholdsBelowPoverty_sum": 1922,
+                "Households_Estimate_Total_sum": 17084,
+                "Households_MedianIncome_sum": 1599927,
+                "Location": "Dinwiddie",
+                "Median_HHI_Weight_sum": 939508680,
+                "Population_Estimate_Total_sum": 47297
+            },
+            {
+                "HouseholdsBelowPoverty_sum": 3187,
+                "Households_Estimate_Total_sum": 18738,
+                "Households_MedianIncome_sum": 1655688,
+                "Location": "Petersburg",
+                "Median_HHI_Weight_sum": 825132974,
+                "Population_Estimate_Total_sum": 50777
+            },
+            {
+                "HouseholdsBelowPoverty_sum": 10509,
+                "Households_Estimate_Total_sum": 142938,
+                "Households_MedianIncome_sum": 15343615,
+                "Location": "Chesterfield",
+                "Median_HHI_Weight_sum": 10509340647,
+                "Population_Estimate_Total_sum": 397630
+            },
+            {
+                "HouseholdsBelowPoverty_sum": 3326,
+                "Households_Estimate_Total_sum": 26638,
+                "Households_MedianIncome_sum": 2535374,
+                "Location": "Prince George",
+                "Median_HHI_Weight_sum": 1470378513,
+                "Population_Estimate_Total_sum": 79391
+            },
+            {
+                "HouseholdsBelowPoverty_sum": 1618,
+                "Households_Estimate_Total_sum": 15780,
+                "Households_MedianIncome_sum": 1540743,
+                "Location": "Caroline",
+                "Median_HHI_Weight_sum": 970426181,
+                "Population_Estimate_Total_sum": 4260
+            },
+            {
+                "HouseholdsBelowPoverty_sum": 1169,
+                "Households_Estimate_Total_sum": 12740,
+                "Households_MedianIncome_sum": 1058400,
+                "Location": "Colonial Heights",
+                "Median_HHI_Weight_sum": 714981669,
+                "Population_Estimate_Total_sum": 36090
+            },
+            {
+                "HouseholdsBelowPoverty_sum": 364,
+                "Households_Estimate_Total_sum": 4865,
+                "Households_MedianIncome_sum": 530084,
+                "Location": "Ashland",
+                "Median_HHI_Weight_sum": 292697179,
+                "Population_Estimate_Total_sum": 13293
+            }],
+        _employmentDataGridColumns:{},
         _resultsTabContainer:{},
         _resultTabs:{},
-        _parcelStatTypes:["sum","min","max","avg","stddev","var"],
-        _parcelStatTypesColumn_Hidden:{"sum":true,"min":true,"max":true,"avg":false,"stddev":true,"var":true},
+        //_parcelStatTypes:["sum","min","max","avg"],
+        _parcelStatTypes:["avg","sum"],
+        _hHIncomeStatTypes:["sum"],
+        _employmentStatTypes:["sum"],
+        _parcelStatTypesColumn_Hidden:{"sum":true,"avg":false},
+        //_parcelStatTypesColumn_Hidden:{"avg":false},
+        _hHIncomeStatTypesColumn_Hidden:{"sum":false},
+        _employmentStatTypesColumn_Hidden:{"sum":false},
         _filtersNodeID : "filterContainer",
         _filterTitlePanes:{},
         _bufferToolDistance:2,
         _polygonDrawButton:{},
         _bufferDistanceContainer:{},
         _bufferTextBox:{},
+        _commitLocalitySelectionButton:{},
+        _cancelLocalitySelectionButton:{},
         _activeResultsSection:1,
         _resultsTabToGraphicCountHash:{},
         _tearDownReferences:{},
         _activeColor:"",
+        _helpDialog:null,
+        _aboutDialog:null,
+        _tutorialCount:0,
+        _employmentColors:{
+            "Agriculture, Forestry, Fishing and Hunting":{
+                "fill1":"rgb(73, 124, 145)",
+                "fill2":"rgb(89, 160, 189)",
+                "stroke":"rgb(34, 98, 125)"
+            },
+            "Mining, Quarrying, and Oil and Gas Extraction":{
+                "fill1":"rgb(108, 109, 142)",
+                "fill2":"rgb(141, 136, 199)",
+                "stroke":"rgb(138, 132, 197)"
+            },
+            "Construction":{
+                "fill1":"rgb(118, 139, 78)",
+                "fill2":"rgb(133, 165, 74)",
+                "stroke":"rgb(91, 109, 31)"
+            },
+            "Manufacturing":{
+                "fill1":"rgb(198, 195, 97)",
+                "fill2":"rgb(232, 230, 103)",
+                "stroke":"rgb(145, 142, 56)"
+            },
+            "Wholesale Trade and Retail Trade":{
+                "fill1":"rgb(199, 162, 35)",
+                "fill2":"rgb(233, 199, 86)",
+                "stroke":"rgb(148, 123, 48)"
+            },
+            "Transportation, Warehousing, and Utilities":{
+                "fill1":"rgb(129, 84, 84)",
+                "fill2":"rgb(160, 90, 90)",
+                "stroke":"rgb(87, 40, 40)"
+            },
+            "Information, Finance and Insurance, Real Estate, and Professional, Scientific, and Technical Services":{
+                "fill1":"rgb(114, 84, 62)",
+                "fill2":"rgb(177, 112, 68)",
+                "stroke":"rgb(116, 72, 46)"
+            },
+            "Management of Companies and Enterprises, and Administrative Support, and Waste Management and Remediation Services":{
+                "fill1":"rgb(114, 114, 114)",
+                "fill2":"rgb(165, 165, 165)",
+                "stroke":"rgb(83, 83, 83)"
+            },
+            "Educational Services":{
+                "fill1":"rgb(89, 160, 189)",
+                "fill2":"rgb(157, 199, 217)",
+                "stroke":"rgb(34, 98, 125)"
+            },
+            "Health Care and Social Assistance":{
+                "fill1":"rgb(134, 129, 179)",
+                "fill2":"rgb(183, 179, 218)",
+                "stroke":"rgb(138, 132, 197)"
+            },
+            "Arts, Entertainment, and Recreation":{
+                "fill1":"rgb(133, 165, 74)",
+                "fill2":"rgb(168, 193, 121)",
+                "stroke":"rgb(91, 109, 31)"
+            },
+            "Accommodation and Food Services":{
+                "fill1":"rgb(214, 212, 86)",
+                "fill2":"rgb(238, 234, 153)",
+                "stroke":"rgb(145, 142, 56)"
+            },
+            "Other Services except Public Administration":{
+                "fill1":"rgb(233, 199, 86)",
+                "fill2":"rgb(235, 207, 129)",
+                "stroke":"rgb(148, 123, 48)"
+            },
+            "Public Administration":{
+                "fill1":"rgb(160, 90, 90)",
+                "fill2":"rgb(201, 153, 153)",
+                "stroke":"rgb(87, 40, 40)"
+            }
+        },
+        _MSAIndicators:{
+            "Households_MedianIncome":58891,
+            "Households_PercentBelowPoverty":11.38
+        },
+        _USIndicators:{
+            "Households_MedianIncome":53046,
+            "Households_PercentBelowPoverty":11.6
+        },
+        //Source: U.S. Census Bureau, 2009-2013 5-Year American Community Survey
         _init: function () {
-            console.log("Starting Init");
-            this._createParcelStatisticsDefinition();
+
+
+            this._parcelDataGridColumns["VMP_P1_V12"] = {"label":"Land Use"};
+            this._hHIncomeDataGridColumns["Location"] = {"label":"Location"};
+            this._createStatisticsDefinition(this._parcelStatTypes,this._parcelStatTypesColumn_Hidden,this._parcelFilters,this._parcelFilterKeys,this._parcelDataGridColumns,this._parcelStatisticsDefinition,this._parcelGroupByFields);
+            this._createStatisticsDefinition(this._hHIncomeStatTypes,this._hHIncomeStatTypesColumn_Hidden,this._hHIncomeFilters,this._hHIncomeFilterKeys,this._hHIncomeDataGridColumns,this._hHIncomeStatisticsDefinition,this._hHIncomeGroupByFields);
+            this._createStatisticsDefinition(this._employmentStatTypes,this._employmentStatTypesColumn_Hidden,this._employmentFilters,this._employmentFilterKeys,this._employmentDataGridColumns,this._employmentStatisticsDefinition,this._employmentGroupByFields);
             this._createUIElements();
             this._createMapElements();
             //maybe this should wait on map load?
             this._createSearch();
+            this._startUpTutorial();
         },
 
         /*Create things*/
 
 
-        _createParcelStatisticsDefinition:function(){
-            console.log("_createParcelStatisticsDefinition");
+
+        _createStatisticsDefinition:function(StatTypes,StatTypesColumn_Hidden,Filters,FilterKeys,DataGridColumns,StatisticsDefinition,GroupByFields){
+
+
             var that = this;
-/*            var statTypes = ["count","sum","min","max","avg","stddev","var"];
-            var statTypes_hidden = {"count":true,"sum":true,"min":true,"max":true,"avg":false,"stddev":true,"var":true};*/
+            var statTypes = StatTypes;
 
-            var statTypes = this._parcelStatTypes;
-            var statTypes_hidden = this._parcelStatTypesColumn_Hidden;
-
-            that._parcelDataGridColumns["VMP_P1_V12"] = {"label":"Land Use"};
-            array.forEach( this._parcelFilters, function (itemFilters, iFilters) {
+            var statTypes_hidden = StatTypesColumn_Hidden;
+            array.forEach( Filters, function (itemFilters, iFilters) {
                 //just adding some flexibility with addressing...
-                that._parcelFilterKeys[itemFilters.fieldName] = iFilters;
-                //while we are here let's make the columns for our data grid...
+                FilterKeys[itemFilters.fieldName] = iFilters;
+
                 switch (itemFilters.filterType) {
                     case "range":
                         array.forEach( statTypes, function (itemTypes, iType) {
+                            var localSsatisticDefinition = new StatisticDefinition();
+                            localSsatisticDefinition.onStatisticField = itemFilters.fieldName;
+                            localSsatisticDefinition.outStatisticFieldName = itemFilters.shortFieldName+"_"+itemTypes;
+                            localSsatisticDefinition.statisticType = itemTypes;
 
-                            var statisticDefinition = new StatisticDefinition();
-                            statisticDefinition.onStatisticField = itemFilters.fieldName;
-                            statisticDefinition.outStatisticFieldName = itemFilters.fieldName+"_"+itemTypes;
-                            that._parcelDataGridColumns[itemFilters.fieldName+"_"+itemTypes] = {"label":itemFilters.filterDisplayName+" : "+itemTypes};
-                            that._parcelDataGridColumns[itemFilters.fieldName+"_"+itemTypes]["hidden"] = statTypes_hidden[itemTypes];
-                            if (itemFilters.hasOwnProperty("renderCellFunctionReference")) {
-                                that._parcelDataGridColumns[itemFilters.fieldName+"_"+itemTypes]["renderCell"] = that[itemFilters.renderCellFunctionReference];
-                            };
-                            statisticDefinition.statisticType = itemTypes;
-                            that._parcelStatisticsDefinition.push(statisticDefinition)
+                            StatisticsDefinition.push(localSsatisticDefinition);
+                            //while we are here let's make the columns for our data grid...
+                            if(!itemFilters.doNotDisplayAtAll && !statTypes_hidden[itemTypes]) {
+                                DataGridColumns[itemFilters.shortFieldName + "_" + itemTypes] = {"label": itemFilters.filterDisplayName + " : " +(statTypes.length > 1 ? itemTypes : "")};
+                               // DataGridColumns[itemFilters.shortFieldName + "_" + itemTypes]["hidden"] = (statTypes_hidden[itemTypes] || itemFilters.hidden);
+                                if (itemFilters.hasOwnProperty("renderCellFunctionReference")) {
+                                    DataGridColumns[itemFilters.shortFieldName + "_" + itemTypes]["renderCell"] = that[itemFilters.renderCellFunctionReference];
+                                }
+
+                            }
                         });
                         break;
                     case "choices":
                         //we will group by choice types
-                        that._parcelGroupByFields.push(itemFilters.fieldName);
+                        GroupByFields.push(itemFilters.fieldName);
                         //we will also count on the choice fields.
-                        var statisticDefinition = new StatisticDefinition();
-                        statisticDefinition.onStatisticField = itemFilters.fieldName;
-                        statisticDefinition.outStatisticFieldName = itemFilters.fieldName+"_count";
-                        that._parcelDataGridColumns[itemFilters.fieldName+"_count"] = {"label":itemFilters.filterDisplayName+" : Count"};
-                        statisticDefinition.statisticType = "count";
-                        that._parcelStatisticsDefinition.push(statisticDefinition)
+                        var localSsatisticDefinition = new StatisticDefinition();
+                        localSsatisticDefinition.onStatisticField = itemFilters.fieldName;
+                        localSsatisticDefinition.outStatisticFieldName = itemFilters.fieldName+"_count";
+                        DataGridColumns[itemFilters.fieldName+"_count"] = {"label":itemFilters.filterDisplayName+" : Count"};
+                        localSsatisticDefinition.statisticType = "count";
+                        StatisticsDefinition.push(localSsatisticDefinition);
                         break;
                     default:
 
-                };
+                }
             });
+
+
+
 
 
 
         },
         _createUIElements: function () {
-            console.log("_createUIElements");
+
             var that = this;
-
-
-
             // create a BorderContainer as the top widget in the hierarchy
             var bc = new BorderContainer({
                 /*style: "height: 500px;width:100%;"*/
@@ -361,8 +1316,11 @@
             this._createFilterElements();
             this._createResultsTabContainer();
 
+            var clickLink =  dom.byId("helpClick");
+            on(clickLink,"click", function(){that._handleHelpClick();});
 
-
+            var aboutLink =  dom.byId("aboutClick");
+            on(aboutLink,"click", function(){that._handleAboutClick();});
 
 
 
@@ -372,7 +1330,7 @@
             var filterNode = dom.byId(this._filtersNodeID);
             //create the filters and put them in the left nav section as designated by this._filterNodeID
 
-            var tpselectOptions = new TitlePane({title:"Map Selection Tools", content: "<div id=\"selectOptions\">Define Selection tool by</div><br /><div id=\"polyDraw\"></div><div id=\"bufferDistance\"></div>"});
+            var tpselectOptions = new TitlePane({title:"Map Selection Tools", content: "<div id=\"selectOptions\" ><div class=\"mapSelectorText\">Select an area to study by: </div></div><br /><div id=\"polyDraw\"></div><div id=\"bufferDistance\"></div><div id=\"localitiesTools\"><div id=\"localCancel\"></div><div id=\"localCommit\"></div></div>"});
             filterNode.appendChild(tpselectOptions.domNode);
             tpselectOptions.startup();
 
@@ -384,14 +1342,14 @@
 
         },
         _createResultsTabContainer: function(){
-            console.log("_createResultsTabContainer");
+
             this._resultsTabContainer = new TabContainer({
                 style: "height: 500px; width: 100%;"
             }, "resultsTabContainer");
             this._resultsTabContainer.startup();
         },
         _createTransparencySlider:function(){
-            console.log("_createTransparencySlider");
+
             var that = this;
             var slider = new HorizontalSlider({
                 name: "slider",
@@ -404,12 +1362,12 @@
                 style: "width:300px;",
                 onChange: function(value){
                     that._parcelDynamicMapServiceLayer.setOpacity(value / 10);
-                    console.log(value);
+
                 }
             }, "transparencySlider").startup();
         },
         _createFilters: function (filterNode) {
-            console.log("_createFilters");
+
             var that = this;
             array.forEach( this._parcelFilters, function (item, i) {
                 switch (item.filterType) {
@@ -425,12 +1383,12 @@
             });
         },
         _createMultiSelect_Grid: function (filterObject,filterNode) {
-            console.log("_createMultiSelect_Grid");
+
 
             if(!this._filterTitlePanes["parcelPropertyType"]) {
-            this._filterTitlePanes["parcelPropertyType"] = new TitlePane({title:"Property Types", content: "<div id=\"parcelPropertyType\"></div>"});
-            filterNode.appendChild(this._filterTitlePanes["parcelPropertyType"].domNode);
-            };
+                this._filterTitlePanes["parcelPropertyType"] = new TitlePane({title:"Select Property Types", content: "<div id=\"parcelPropertyType\"></div>"});
+                 filterNode.appendChild(this._filterTitlePanes["parcelPropertyType"].domNode);
+            }
 
 
             var node = domConstruct.create("div",{ id:filterObject.fieldName+"_div","class":"filterChoices" },dom.byId(filterObject.filterGroup),"last");
@@ -455,10 +1413,10 @@
 
             if(!this._filterTitlePanes["parcelPropertyType"]) {
                 this._filterTitlePanes["parcelPropertyType"].startup();
-            };
+            }
         },
         _createMultiSelect_dojox: function (filterObject) {
-            console.log("_createMultiSelect_dojox");
+
             var node = domConstruct.create("div",{ id:filterObject.fieldName+"_div","class":"filterChoices" },dom.byId(filterObject.filterGroup),"last");
 
 
@@ -468,7 +1426,7 @@
              var option3 = domConstruct.create("option", { innerHTML: "No Preference", value: "00" }, mySelect);
              var option1 = domConstruct.create("option", { innerHTML: "InnerHTML1", value: "value1" }, mySelect);
              var option2 = domConstruct.create("option", { innerHTML: "InnerHTML2", value: "value2" }, mySelect);
-             var option3 = domConstruct.create("option", { innerHTML: "InnerHTML3", value: "value3" }, mySelect);
+             var option4 = domConstruct.create("option", { innerHTML: "InnerHTML3", value: "value3" }, mySelect);
 
 
              array.forEach(filterObject.filterOptions, function (item, i) {
@@ -487,7 +1445,7 @@
 
         },
         _createTextBoxRanges: function (filterObject,filterNode) {
-            console.log("_createTextBoxRanges");
+
 
             if (!this._filterTitlePanes["parcelAttributeChoices"]) {
             this._filterTitlePanes["parcelAttributeChoices"] = new TitlePane({
@@ -495,12 +1453,12 @@
                 "class":"filterTextBoxRanges"
             });
             filterNode.appendChild(this._filterTitlePanes["parcelAttributeChoices"].domNode);
-        };
+        }
 
 
             //create a div to hold a specific range
             var node = domConstruct.create("div",{ id:filterObject.fieldName+"_div","class":"filterRanges" });
-            this._filterTitlePanes["parcelAttributeChoices"].containerNode.appendChild(node)
+            this._filterTitlePanes["parcelAttributeChoices"].containerNode.appendChild(node);
 
             //filterDisplayName
             var nameNode = domConstruct.create("div",{ "innerHTML":filterObject.filterDisplayName,"class":"filterRangesName"  },node,"last");
@@ -541,7 +1499,7 @@
 
             },
         _createSliders:function(){
-            console.log("_createSliders");
+
 
             //create the parcel filter options
             // Create the rules
@@ -579,17 +1537,19 @@
             }));
         },
         _createMapSelectionTools:function(){
-            console.log("_createMapSelectionTools");
+
             var that=this;
 
             //create the selection method dropdown.
             this._selectionTypeDropdown = new Select({
                 name: "select2",
+                "class":"mapSelector",
                 options: [
-                    { label: "Draw Polygon", value: "polygon" },
-                    { label: "By Buffer", value: "buffer", selected: true },
-                    { label: "By Region", value: "region" },
-                    { label: "By Individual Agg Group", value: "individual" }                ],
+                    { label: "Drawing a Polygon", value: "polygon" },
+                    { label: "Buffering a point", value: "buffer", selected: true },
+                    { label: "By County", value: "county" }//,
+                 //   { label: "By Individual Agg Group", value: "individual" }
+                 ],
                 onChange: lang.hitch(that, function(event){that._handleMapSelectionDropDownChange(event);})
             });
             this._selectionTypeDropdown.placeAt("selectOptions");
@@ -600,6 +1560,7 @@
                 label: "Click to Start Drawing",
                 onClick: lang.hitch(that, function () {
                     // Do something:
+
                     this._toolbar.activate(esri.toolbars.Draw.FREEHAND_POLYGON);
                     this._map.hideZoomSlider();
                 })
@@ -611,7 +1572,7 @@
             //create a simple text box for buffer distance  ..
             this._bufferDistanceContainer = domConstruct.create("div",{ id:"bufferDistanceContainer","class":"bufferDistanceContainer" },"bufferDistance","last");
             var bufferDistanceTextBoxContainer = domConstruct.create("div",{ id:"bufferDistanceTextBoxContainer","class":"bufferDistanceTextBoxContainer" },this._bufferDistanceContainer,"last");
-            domConstruct.create("span",{ "class":"bufferDistanceLabel","innerHTML":"Distance (in miles)" },this._bufferDistanceContainer,"last");
+            domConstruct.create("span",{ "class":"bufferDistanceLabel","innerHTML":" Distance (in miles)" },this._bufferDistanceContainer,"last");
             this._bufferTextBox = new TextBox({
                 name: "bufferDistanceTextBox",
                 value: "2" ,
@@ -622,16 +1583,46 @@
                 }
             },bufferDistanceTextBoxContainer);
 
+            //create locality options
+            //localitiesTools
+            //create button to commit locality selection
+            this._commitLocalitySelectionButton = new Button({
+                label: "Create New Result Set",
+                onClick: lang.hitch(that, function () {
+                    // Do something:
+                  this._handleCountyCommit();
+                })
+            }, "localCommit");
+            this._commitLocalitySelectionButton.startup();
+            //and then immediately hide the button for later use.
+            domStyle.set(this._commitLocalitySelectionButton.domNode, 'display', 'none');
+
+
+            //create button to cancel locality selection
+            this._cancelLocalitySelectionButton = new Button({
+                label: "Clear Current Selection",
+                onClick: lang.hitch(that, function () {
+                    this._handleCountySelectionClear();
+                })
+            }, "localCancel");
+            this._cancelLocalitySelectionButton.startup();
+            //and then immediately hide the button for later use.
+            domStyle.set(this._cancelLocalitySelectionButton.domNode, 'display', 'none');
+
+
+
+
+
         },
         _createMapElements: function () {
-            console.log("_createMapElements");
+
             var that = this;
             //create the map object , we will add data to it later. for now it just has a basemap.
             esriConfig.defaults.io.proxyUrl = "/proxy/";
             this._map = new Map("map", {
                 basemap: "topo",
                 center: [-77.455, 37.469],
-                zoom: 13
+                zoom: 14
             });
 
 
@@ -645,7 +1636,7 @@
 
             });
 
-
+            this._map.on("load", lang.hitch(this,this._initTools));
 
 
             //add a dynamicmap service layer...
@@ -656,11 +1647,40 @@
                 "imageParameters": imageParameters
             });
 
+
+            var fieldsSelectionSymbol =
+                new SimpleFillSymbol(SimpleFillSymbol.STYLE_SOLID,
+                    new SimpleLineSymbol(SimpleLineSymbol.STYLE_DASHDOT,
+                        new Color([255, 0, 0]), 2), new Color([255, 255, 0, 0.5]));
+
+           // var content = "<b>NAME</b>: ${NAME}" ;
+           // var infoTemplate = new InfoTemplate("${FIELD_NAME}", content);
+
+
+            this._localityFeatureLayer = new FeatureLayer("http://magi.vcu.edu/arcgis/rest/services/MetroView/Localities/MapServer/0",
+                {
+                    mode: FeatureLayer.MODE_ONDEMAND,
+                   // infoTemplate: infoTemplate,
+                    outFields: ["*"]
+                });
+
+
+            this._localityFeatureLayer.setSelectionSymbol(fieldsSelectionSymbol);
+            this._localityFeatureLayer.on("click", lang.hitch(this,function(e){
+
+            }));
+            this._localityFeatureLayer.on("selection-clear", function () {
+                console.log("No Selected Fields");
+            });
+            this._map.addLayer(this._localityFeatureLayer );
+            //hide the locality feature layer right away.
+            this._localityFeatureLayer.hide();
             this._map.addLayer(this._parcelDynamicMapServiceLayer);
 
 
             this._queryTask = new QueryTask("http://magi.vcu.edu/arcgis/rest/services/MetroView/Parcels/MapServer/0");
-
+            this._queryTaskHHIncome = new QueryTask("http://magi.vcu.edu/arcgis/rest/services/MetroView/HHIncome_ByBlockGroups/MapServer/0");
+            this._queryTaskEmployment = new QueryTask("http://magi.vcu.edu/arcgis/rest/services/MetroView/Employmentby_ByCensusTract/MapServer/0");
 
             //when the map is clicked create a buffer around the click point of the specified distance.
             this._map.on("click", function (evt) {
@@ -688,6 +1708,8 @@
                     var graphic = new Graphic(point, markerSymbol);
                     that._map.graphics.add(graphic);
                     that._performQueryTasks(evt.mapPoint, "point");
+                }else if(that._selectionTypeDropdown.value == "county"){
+                    lang.hitch(that,that._handleCountySelection(evt.graphic.attributes.OBJECTID));
                 } else {
                     console.log("End of else block...");
                 };
@@ -702,21 +1724,21 @@
             this._basemapGallery = new BasemapGallery({
                 showArcGISBasemaps: true,
                 map: this._map
-            }, "basemapGallery")
+            }, "basemapGallery");
             this._basemapGallery.startup();
             this._basemapGallery.on("error", function (msg) {
                 console.log("basemap gallery error:  ", msg);
             });
 
-            this._map.on("load", lang.hitch(this,this._initTools));
+
 
 
         },
         _createParcelPieChart:function(variableName){
-            console.log("_createParcelPieChart");
+
 
             //_createParcelPieChart:function(chartingNode,chartingLegendNode){
-
+            var chartingPieNodeEmployeesTitle = domConstruct.create("div",{ "innerHTML":"Land Use Counts","class":"pieChartTitle" },this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
             var chartingPieNode = domConstruct.create("div",{ id:"chartsDivSelection_"+this._filterGraphicsCount,"class":"filterCharts" },this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
             var chartingPieLegendNode = domConstruct.create("div",{ id:"chartsLegendDivSelection_"+this._filterGraphicsCount,"class":"filterLegendCharts" },this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
 
@@ -744,8 +1766,8 @@
             });
 
             // Add the series of data
-            //var storeSeries_VMP_P1_V3_count = new StoreSeries(this._resultsdStore, 'VMP_P1_V3_count');
-            var pieStoreSeries = new StoreSeries(this._resultsdStore[this._filterGraphicsCount], function(parcelStuff){
+            //var storeSeries_VMP_P1_V3_count = new StoreSeries(this._resultsParceldStore, 'VMP_P1_V3_count');
+            var pieStoreSeries = new StoreSeries(this._resultsParceldStore[this._filterGraphicsCount], function(parcelStuff){
                 return {"y":parcelStuff[variableName+"_count"],"text":parcelStuff[variableName]+ " " + parcelStuff[variableName+"_count"]};
             });
 
@@ -753,17 +1775,17 @@
 
             var tip = new Tooltip(pieChart, "default");
             // Create the magnifier
-            var mag = new Magnify(pieChart,"default");
+            var mag = new MoveSlice(pieChart,"default");
 
 
             // Render the chart!
             pieChart.render();
 
-            var legend = new Legend({ chart: pieChart }, chartingPieLegendNode);
+            var legend = new Legend({ chart: pieChart,horizontal:false }, chartingPieLegendNode);
 
         },
         _createParcelBarChart:function(variableName,filterGraphicsCount){
-            console.log("_createParcelBarChart");
+
             var that= this;
             var variableNameSplit = variableName.split("_");
             //o.k. so I messed up and used the _ character to append the stat type to the variable....now I need to extract it...so it'll get messy here for a second....
@@ -811,7 +1833,7 @@
             var groupBy_Field = this._parcelGroupByFields[0];
 
 /*            //tryuing it out with the styleFunc...
-            var storeSeries = new StoreSeries(that._resultsdStore[that._filterGraphicsCount], function(parcelStuff){
+            var storeSeries = new StoreSeries(that._resultsParceldStore[that._filterGraphicsCount], function(parcelStuff){
                 return {"y":parcelStuff[variableName],"text":parcelStuff[groupBy_Field] + " " + parcelStuff[variableName],"fieldName":parcelStuff[groupBy_Field]};
             });
             // Add the series of data
@@ -838,7 +1860,7 @@
                 var filterObject={};
                 filterObject[groupBy_Field] = item.propertyType;
                 //console.log(filterObject);
-                var storeSeries = new StoreSeries(that._resultsdStore[that._filterGraphicsCount].filter(filterObject), function(parcelStuff){
+                var storeSeries = new StoreSeries(that._resultsParceldStore[that._filterGraphicsCount].filter(filterObject), function(parcelStuff){
                     return {"y":parcelStuff[variableName],"text":parcelStuff[groupBy_Field] + " " + parcelStuff[variableName]};
                 });
                 // Add the series of data
@@ -862,8 +1884,275 @@
             this._tearDownReferences[variableName+"_"+filterGraphicsCount] = [chartingTitleBarNode,chartingBarNode,chartingBarLegendNode,chartingBarDividerNode,barChart,legend];
 
         },
+        _createEmploymentPieChart:function(){
+
+//Establishments
+//Employees
+
+            var chartingContainer = domConstruct.create("div",{ id:"chartsDivSelectionSpan_"+this._filterGraphicsCount,"class":"filterCharts","innerHTML":"" },this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
+            var chartingPieNodeEmployeesTitle = domConstruct.create("div",{ "innerHTML":"Employees","class":"pieChartTitle" },chartingContainer,"last");
+            var chartingPieNodeEmployees = domConstruct.create("div",{ id:"chartsDivSelectionEmployment_"+this._filterGraphicsCount,"class":"filterCharts" },chartingContainer,"last");
+            var chartingPieNodeEstablishementsTitle = domConstruct.create("div",{ "innerHTML":"Establishments","class":"pieChartTitle" },chartingContainer,"last");
+            var chartingPieNode = domConstruct.create("div",{ id:"chartsDivSelectionEstablishments_"+this._filterGraphicsCount,"class":"filterCharts" },chartingContainer,"last");
+            var chartingPieLegendNode = domConstruct.create("div",{ id:"chartsLegendDivSelectionEmployment_"+this._filterGraphicsCount,"class":"filterLegendCharts" },this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
+            var chartingBubbleNodeEstablishementsTitle = domConstruct.create("div",{ "innerHTML":"Employment Bubble Graph","class":"pieChartTitle" },chartingContainer,"last");
+            var chartingBubbleNode = domConstruct.create("div",{ id:"chartsDivSelectionBubble_"+this._filterGraphicsCount,"class":"filterBubbleCharts" },chartingContainer,"last");
+
+
+            //Charting the results...
+
+            // Create the chart within it's "holding" node
+            var pieChart = new Chart(chartingPieNode);
+            var pieChartEmployees = new Chart(chartingPieNodeEmployees);
+            var bubbleChartEmployment  = new Chart(chartingBubbleNode);
+
+            // Set the theme
+            pieChart.setTheme(theme);
+            pieChartEmployees.setTheme(theme);
+            bubbleChartEmployment.setTheme(theme);
+
+            // Add the only/default plot
+            pieChart.addPlot("default", {
+                type: PiePlot, // our plot2d/Pie module reference as type value
+                radius: 100,
+                fontColor: "black",
+                labels: false,
+                ticks: true,
+                fixed: false,
+                precision: 1,
+                labelOffset: 20,
+                labelStyle: "columns",      // default/columns/rows/auto
+                htmlLabels: true            // use HTML to draw labels
+            });
+            pieChartEmployees.addPlot("default", {
+                type: PiePlot, // our plot2d/Pie module reference as type value
+                radius: 100,
+                fontColor: "black",
+                labels: false,
+                ticks: true,
+                fixed: false,
+                precision: 1,
+                labelOffset: 20,
+                labelStyle: "columns",      // default/columns/rows/auto
+                htmlLabels: true            // use HTML to draw labels
+            });
+            bubbleChartEmployment.addPlot("default", {
+                type:"Bubble", styleFunc: lang.hitch(this,function(item){
+
+                    return { fill : this._employmentColors[item.textID].fill2,stroke : this._employmentColors[item.textID].stroke };
+                })
+            });
+
+            // Add the series of data
+            //var storeSeries_VMP_P1_V3_count = new StoreSeries(this._resultsParceldStore, 'VMP_P1_V3_count');
+
+            var pieStoreSeries = new StoreSeries(this._resultsEmploymentdStore[this._filterGraphicsCount], function(employmentStuff){
+               // console.log(employmentStuff);
+               // console.log(employmentStuff["Employment Indicator"]);
+                // if(parcelStuff["Employment Indicator"] != "All Sectors") {
+                return {"y": employmentStuff["Establishments"], "text": employmentStuff["Employment Indicator"]};
+                // };
+            });
+
+            var pieStoreSeriesEmployee = new StoreSeries(this._resultsEmploymentdStore[this._filterGraphicsCount], function(employeeStuff){
+                // console.log(employeeStuff);
+                //  console.log(employeeStuff["Employment Indicator"]);
+                // if(parcelStuff["Employment Indicator"] != "All Sectors") {
+                return {"y": employeeStuff["Employees"], "text": employeeStuff["Employment Indicator"]};
+                // };
+            });
+
+
+            var bubbleStoreSeriesEmployee = new StoreSeries(this._resultsEmploymentdStore[this._filterGraphicsCount].sort("Percent Employees",true), function(employeeStuff){
+
+                var Text = "<b>"+employeeStuff["Employment Indicator"] +"</b><br /> \
+                <table> \
+                <tr><td>Establishments</td><td>&nbsp;&nbsp;"+ employeeStuff["Percent Establishments"] +"%&nbsp;&nbsp;&nbsp;</td></tr>\
+                <tr><td>Employees</td><td>&nbsp;&nbsp;"+ employeeStuff["Percent Employees"] +"%&nbsp;&nbsp;&nbsp;</td></tr>\
+                </table>";
+
+                //var Text = ": <br /><br />Establishments "+employeeStuff["Percent Establishments"]+ "% <br /> "+" Employees "+employeeStuff["Percent Employees"]+ "%  ";
+                return {"size": employeeStuff["Percent Employees"],"y": employeeStuff["Percent Establishments"],"x": employeeStuff["Percent Establishments"], "text": Text, "textID": employeeStuff["Employment Indicator"]};
+
+            });
+            console.log(bubbleStoreSeriesEmployee);
+            pieChart.addSeries("Industry Sectors",pieStoreSeries);
+            pieChartEmployees.addSeries("Industry Sectors",pieStoreSeriesEmployee);
+
+            bubbleChartEmployment.addAxis("x");
+            bubbleChartEmployment.addAxis("y", {vertical: true, fixLower: "major", fixUpper: "major"});
+
+            bubbleChartEmployment.addSeries("Industry Sectors",bubbleStoreSeriesEmployee);
+
+            var tip = new Tooltip(pieChart, "default");
+            var tip2 = new Tooltip(pieChartEmployees, "default");
+            var tip3 = new Tooltip(bubbleChartEmployment, "default");
+            // Create the magnifier
+            var mag = new MoveSlice(pieChart,"default");
+            var mag2 = new MoveSlice(pieChartEmployees,"default");
+
+
+            // Render the chart!
+            pieChart.render();
+            pieChartEmployees.render();
+            var legend = new Legend({ chart: pieChart,horizontal:false }, chartingPieLegendNode);
+            bubbleChartEmployment.render();
+
+        },
+        _createHHIncomePieChart:function(HHIncome_Grid_MainRight){
+
+
+//Establishments
+//Employees
+            //create main charting div
+            var HHIncome_Charts_Main = domConstruct.create("div",{"class":"chartsMain" },this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
+            var hHBelowPovertyLevel = this._resultsHHIncomedStore[this._filterGraphicsCount].data[0].HouseholdsBelowPoverty_sum;
+            var totalHH = this._resultsHHIncomedStore[this._filterGraphicsCount].data[0].Households_Estimate_Total_sum;
+            var percentBelowPoverty = 100*(hHBelowPovertyLevel/totalHH);
+            var percentAbovePoverty = 100*((totalHH-hHBelowPovertyLevel)/totalHH);
+
+            //create divs for each of the different charts.
+            var HHIncome_PercentPovertyPie = domConstruct.create("div",{"class":"chartsSubHHIncomePercentPoverty" },HHIncome_Grid_MainRight,"last");
+            var chartingPieNodeTitle = domConstruct.create("div",{ "innerHTML":"Households below the poverty level.","class":"pieChartTitle_Poverty" },HHIncome_PercentPovertyPie,"last");
+            var chartingPieNode = domConstruct.create("div",{ id:"chartsDivSelectionHHIncome_"+this._filterGraphicsCount,"class":"filterCharts_HHIncomePoverty" },HHIncome_PercentPovertyPie,"last");
+            var chartingPieLegendNodeContainer = domConstruct.create("div",{ id:"chartsLegendDivSelectionHHIncome_"+this._filterGraphicsCount,"class":"filterLegendCharts_HHIncomePovertyContainer" },HHIncome_PercentPovertyPie,"last");
+            var chartingPieLegendNode = domConstruct.create("div",{ id:"chartsLegendDivSelectionHHIncome_"+this._filterGraphicsCount,"class":"filterLegendCharts_HHIncomePoverty" },chartingPieLegendNodeContainer,"last");
+
+            //Charting the results...
+
+            // Create the chart within it's "holding" node
+            var pieChart = new Chart(chartingPieNode);
+
+            // Set the theme
+            pieChart.setTheme(theme);
+
+            // Add the only/default plot
+            pieChart.addPlot("default", {
+                type: PiePlot, // our plot2d/Pie module reference as type value
+                radius: 65,
+                fontColor: "black",
+                labels: false,
+                ticks: true,
+                fixed: false,
+                precision: 1,
+                labelOffset: 0,
+                labelStyle: "columns",      // default/columns/rows/auto
+                htmlLabels: true            // use HTML to draw labels
+            });
+
+
+            var chartData = [
+                { x: "1", y: percentBelowPoverty, text:"Below poverty." },
+                { x: "1", y: percentAbovePoverty,text:"Above poverty." }
+            ];
+
+            pieChart.addSeries("Poverty Level",chartData);
+            var tip = new Tooltip(pieChart, "default");
+
+            // Create the magnifier
+            var mag = new MoveSlice(pieChart,"default");
+            // Render the chart!
+            pieChart.render();
+            var legend = new Legend({ chart: pieChart,horizontal:true }, chartingPieLegendNode);
+
+
+
+//add bar charts
+            var medianHHIncome = this._createGoodIntegerFormat(this._resultsHHIncomedStore[this._filterGraphicsCount].data[0].Median_HHI_Weight_sum/this._resultsHHIncomedStore[this._filterGraphicsCount].data[0].Households_Estimate_Total_sum);
+
+            var HHIncome_PercentPovertyBar = domConstruct.create("div",{"class":"chartsSubHHIncomePercentPovertyBar" },HHIncome_Charts_Main,"last");
+            var chartingBarNodePoverty = domConstruct.create("div",{ id:"barChartsPovertyDivSelectionHHIncome_"+this._filterGraphicsCount,"class":"filterChartsHHIncomeBar" },HHIncome_PercentPovertyBar,"last");
+            this._createHHIncomeBarChart(chartingBarNodePoverty,this._createGoodPercentFormat(percentBelowPoverty),this._MSAIndicators.Households_PercentBelowPoverty,this._USIndicators.Households_PercentBelowPoverty);
+
+            var HHIncome_MedianHHIBar = domConstruct.create("div",{"class":"chartsSubHHIncomePercentPovertyBar" },HHIncome_Charts_Main,"last");
+            var chartingBarNodeIncome = domConstruct.create("div",{ id:"barChartsIncomeDivSelectionHHIncome_"+this._filterGraphicsCount,"class":"filterChartsHHIncomeBar" },HHIncome_MedianHHIBar,"last");
+            this._createHHIncomeBarChart(chartingBarNodeIncome,medianHHIncome,this._MSAIndicators.Households_MedianIncome,this._USIndicators.Households_MedianIncome);
+
+
+
+
+
+
+
+
+
+        },
+        _createHHIncomeBarChart:function(node,studyAreaValue,MSAValue,USValue){
+
+            //bar chart stuff ***************************************************
+            //var c = new dojox.charting.Chart2D(chartingBarNodePoverty);
+            var c = new Chart(node);
+            c.addPlot("default", {
+                type: "Columns",
+                tension: 3,
+                gap: 10
+            });
+            c.addAxis("x", {
+                labels: [{
+                    value: 1,
+                    text: "Study Area"
+                }, {
+                    value: 2,
+                    text: "MSA"
+                }, {
+                    value: 3,
+                    text: "US"
+                }],
+                fixLower: "major",
+                fixUpper: "major"
+            });
+            c.addAxis("y", {
+                vertical: true,
+                fixLower: "major",
+                fixUpper: "major",
+                min: 0
+            });
+            c.setTheme(theme);
+
+            c.addSeries("Study Area", [{
+                y: studyAreaValue,
+                x: 1,
+                tooltip: studyAreaValue,
+                text: "Study Area",
+                stroke: {
+                    color: "blue",
+                    width: 2
+                },
+                fill: "lightblue"
+            }, ]);
+
+            c.addSeries("MSA", [{
+                y: MSAValue,//this._MSAIndicators.Households_PercentBelowPoverty,
+                x: 2,
+                tooltip: MSAValue,//this._MSAIndicators.Households_PercentBelowPoverty,
+                text: "MSA",
+                stroke: {
+                    color: "blue",
+                    width: 2
+                },
+                fill: "lightblue"
+            }, ]);
+
+
+            c.addSeries("US", [{
+                y: USValue,//this._USIndicators.Households_PercentBelowPoverty,
+                x: 3,
+                tooltip: USValue,//this._USIndicators.Households_PercentBelowPoverty,
+                text: "US",
+                stroke: {
+                    color: "blue",
+                    width: 2
+                },
+                fill: "lightblue"
+            }, ]);
+
+
+            var a1 = new Tooltip(c, "default");
+            var a2 = new Highlight(c, "default");
+            c.render();
+        },
         _createSearch: function () {
-            console.log("_createSearch");
+
             var s = new Search({
                 enableButtonMode: false, //this enables the search widget to display as a single button
                 enableLabel: false,
@@ -912,10 +2201,42 @@
 
         },
         _createResultsTabs: function(){
+            var that = this;
+            var dialogContainerNode = domConstruct.toDom("<div></div>");
+            var dialogTextNode = domConstruct.toDom("<div>Set the name of your Study Area in the Results Tab</div>");
+            var dialogButtonsNode = domConstruct.toDom("<div></div>");
+            var dialogInputNode = domConstruct.toDom("<input id=\"titleInput\" value=\""+"Geography "+this._filterGraphicsCount+"\"></input>");
+
+            dialogContainerNode.appendChild(dialogTextNode);
+            dialogContainerNode.appendChild(dialogInputNode);
+            dialogContainerNode.appendChild(dialogButtonsNode);
+
+            var myDialog = new Dialog({
+                title:"Study Area Name",
+                content:dialogContainerNode,
+                closable:true
+            });
+
+            var closeMyDialog = function(){
+                console.log(dialogInputNode.value);
+                that._resultTabs["result_"+that._filterGraphicsCount].set("title", dialogInputNode.value);
+                myDialog.hide();
+            };
+
+            var OKButton = new Button({
+                label: "OK",
+                onClick: closeMyDialog
+            });
+            dialogButtonsNode.appendChild(OKButton.domNode);
+            OKButton.startup();
+
+            myDialog.show();
+            console.log(dialogInputNode.innerHTML);
             var localCount = this._filterGraphicsCount;
 
             this._resultTabs["result_"+this._filterGraphicsCount] = new ContentPane({
-                title: "Geography "+this._filterGraphicsCount
+                //title: "Geography "+this._filterGraphicsCount
+                title: dialogInputNode.innerHTML
             });
             //relates the tab back to the filter count.
 
@@ -925,7 +2246,7 @@
             var resultsLocalTabReference = this._resultTabs["result_"+this._filterGraphicsCount];
 
 
-            console.log("resultsLocalTabReferenceresultsLocalTabReferenceresultsLocalTabReferenceresultsLocalTabReference");
+
 
             this._resultsTabContainer.addChild(this._resultTabs["result_"+this._filterGraphicsCount]);
             //show the tab right after it is created. Make the charts fill out the space correctly.
@@ -934,48 +2255,133 @@
 
 
             resultsLocalTabReference.startup();
-            console.log(resultsLocalTabReference.controlButton.domNode);
-            console.log(this._activeColor);
             var thisDomNode = resultsLocalTabReference.controlButton.domNode;
             domStyle.set(thisDomNode,"background-color",this._activeColor);
             return resultsLocalTabReference;
         },
+
         _createResultsGrids: function(data){
-            var gridNode = domConstruct.create("div",{ id:"resultsDivSelection_"+this._filterGraphicsCount,"class":"filterResults" },this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
 
-            this._resultsdStore[this._filterGraphicsCount] = new Memory({data:data, idProperty: 'id'});
-            console.log("this._parcelDataGridColumns");
-            console.log(this._parcelDataGridColumns);
+            var that = this;
+            //***************************
+            //Household Income
+            //***************************
+            var HHIncome_Grid_Main = domConstruct.create("div",{"class":"HHIncomeGridDiv" },this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
+                var HHIncome_Grid_MainLeft = domConstruct.create("div",{"class":"HHIncomeGridLeftDiv" },HHIncome_Grid_Main,"last");
+            var HHIncome_Grid_MainRight = domConstruct.create("div",{"class":"HHIncomeGridRightDiv" },HHIncome_Grid_Main,"last");
+            var gridParcelNodeTitle = domConstruct.create("div",{"innerHTML":"<div class=\"filterTableHeader\">Household Income Data</div>" },HHIncome_Grid_MainLeft,"last");
+            var gridHHIncomeNode = domConstruct.create("div",{id:"resultsHHIncomeDivSelection_"+this._filterGraphicsCount,"class":"filterHHIncomResults" },HHIncome_Grid_MainLeft,"last");
+
+
+
+
+            data[1][0]["Location"] = "Geography "+ this._filterGraphicsCount;
+           // var newhHIncomeData = data[1].concat(this._hHIncomeExtraData);
+            this._resultsHHIncomedStore[this._filterGraphicsCount] = new Memory({data:data[1], idProperty: 'id'});
+
+            var localHHIncomeDataGridColumns = lang.clone(this._hHIncomeDataGridColumns);
+            this._resultsHHIncomeGrid[this._filterGraphicsCount] = new (declare([ OnDemandGrid]))({
+                collection: this._resultsHHIncomedStore[this._filterGraphicsCount] ,
+                selectionMode: 'multiple',
+                allowSelectAll:true,
+                columns:  localHHIncomeDataGridColumns
+            }, gridHHIncomeNode);
+            this._resultsHHIncomeGrid[this._filterGraphicsCount].startup();
+            var resultsHHIncomeGridLocalReference = this._resultsHHIncomeGrid[this._filterGraphicsCount];
+
+            this._createHHIncomePieChart(HHIncome_Grid_MainRight);
+
+            resultsHHIncomeGridLocalReference.resize();
+
+            //***************************
+            //Employment
+            //***************************
+            var gridParcelNodeTitle = domConstruct.create("div",{"innerHTML":"<span class=\"filterTableHeader\">Employment Data</span>" },this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
+            var gridEmploymentNode = domConstruct.create("div",{ id:"resultsEmploymentDivSelection_"+this._filterGraphicsCount,"class":"filterEmploymentResults" },this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
+            console.log(data[2]);
+            console.log(this._employmentDataGridColumns);
+
+
+            var newDataForEmployment = [];
+            var totalEstablishments = 0;
+            var totalEmployees = 0;
+            array.forEach(this._employmentFilters, function(item,index){
+                    if(item.type == "establishments") {
+                        totalEstablishments += data[2][0][item.shortFieldName + "_sum"];
+                        totalEmployees += data[2][0][that._employmentFilters[index + 1].shortFieldName + "_sum"];
+                    };
+            });
+
+
+            array.forEach(this._employmentFilters, function(item,index){
+                if(item.type == "establishments") {
+                    var newObject = {
+                        "Employment Indicator": item.filterDisplayName,
+                        "Establishments": data[2][0][item.shortFieldName + "_sum"],
+                        "Percent Establishments": parseFloat(number.format(100*(data[2][0][item.shortFieldName + "_sum"] /totalEstablishments), {places: 2,locale: "en-us"})) ,
+                        "Employees": data[2][0][that._employmentFilters[index+1].shortFieldName + "_sum"],
+                        "Percent Employees": parseFloat(number.format(100*(data[2][0][that._employmentFilters[index+1].shortFieldName + "_sum"] / totalEmployees), {places: 2,locale: "en-us"}))
+                    };
+                    newDataForEmployment.push(newObject);
+                };
+            });
+
+
+            console.log("New Data");
+            console.log(newDataForEmployment);
+            //this._parcelDataGridColumns["VMP_P1_V12"] = {"label":"Land Use"};
+            var newColumnsForEmployment = {"Employment Indicator":{"label":" Industry Sectors"},"Establishments":{"label":"Establishments","renderCell":this._addComma},"Percent Establishments":{"label":"Percent Establishments"},"Employees":{"label":"Employees","renderCell":this._addComma},"Percent Employees":{"label":"Percent Employees"}};
+
+            //this._resultsEmploymentdStore[this._filterGraphicsCount] = new Memory({data:data[2], idProperty: 'id'});
+            //var localEmploymentDataGridColumns = lang.clone(this._employmentDataGridColumns);
+            this._resultsEmploymentdStore[this._filterGraphicsCount] = new Memory({data:newDataForEmployment, idProperty: 'id'});
+            var localEmploymentDataGridColumns = lang.clone(newColumnsForEmployment);
+            this._resultsEmploymentGrid[this._filterGraphicsCount] = new (declare([ OnDemandGrid, ColumnHider ]))({
+                collection: this._resultsEmploymentdStore[this._filterGraphicsCount] ,
+                selectionMode: 'multiple',
+                allowSelectAll:true,
+                columns:  localEmploymentDataGridColumns
+            }, gridEmploymentNode);
+            this._resultsEmploymentGrid[this._filterGraphicsCount].startup();
+
+            var resultsGridLocalReference = this._resultsEmploymentGrid[this._filterGraphicsCount];
+
+            this._createEmploymentPieChart();
+
+            //***************************
+            //Parcel Results
+            //***************************
+
+
+            var gridParcelNodeTitle = domConstruct.create("div",{"innerHTML":"<span class=\"filterTableHeader\">Parcel Data</span>" },this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
+            var gridParcelNode = domConstruct.create("div",{ id:"resultsParcelDivSelection_"+this._filterGraphicsCount,"class":"filterParcelResults" },this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
+
+            this._resultsParceldStore[this._filterGraphicsCount] = new Memory({data:data[0], idProperty: 'id'});
             var localParcelDataGridColumns = lang.clone(this._parcelDataGridColumns);
-
-            this._resultsGrid[this._filterGraphicsCount] = new (declare([ OnDemandGrid, Selector, ColumnHider ]))({
-                collection: this._resultsdStore[this._filterGraphicsCount] ,
+            this._resultsParcelGrid[this._filterGraphicsCount] = new (declare([ OnDemandGrid, ColumnHider ]))({
+                collection: this._resultsParceldStore[this._filterGraphicsCount] ,
                 selectionMode: 'multiple',
                 allowSelectAll:true,
                 columns:  localParcelDataGridColumns
-            }, gridNode);
-            this._resultsGrid[this._filterGraphicsCount].startup();
+            }, gridParcelNode);
+            this._resultsParcelGrid[this._filterGraphicsCount].startup();
 
-
-            this._resultsGrid[this._filterGraphicsCount].on("dgrid-columnstatechange", lang.hitch(this, function (event) {
-                console.log("dgrid column change");
-                console.log(event.column.field);
-                console.log(event.hidden);
-                console.log(this._activeResultsSection);
+            this._resultsParcelGrid[this._filterGraphicsCount].on("dgrid-columnstatechange", lang.hitch(this, function (event) {
                 if(event.hidden) {
                     this._destroyParcelBarChart(event.column.field, this._activeResultsSection);
                 }else {
                     this._createParcelBarChart(event.column.field, this._activeResultsSection);
                 }
             }));
-            var resultsGridLocalReference = this._resultsGrid[this._filterGraphicsCount];
-            return resultsGridLocalReference;
+            var resultsParcelGridLocalReference = this._resultsParcelGrid[this._filterGraphicsCount];
+
+
+
+            return [resultsParcelGridLocalReference,resultsHHIncomeGridLocalReference,resultsGridLocalReference];
         },
         _destroyParcelBarChart:function(variableName,filterGraphicsCount){
-
-            console.log("TO DO...tear down a bar chart....");
             array.forEach(this._tearDownReferences[variableName+"_"+filterGraphicsCount], function (item, i) {
-                console.log(item.id);
+
                 domConstruct.destroy(item.id);
 
             });
@@ -985,21 +2391,25 @@
             var that = this;
             //make charts for all of the variables....we will sort this out later..
             array.forEach( this._parcelFilters, function (itemFilters, iFilters) {
+                if(itemFilters.doNotDisplayAtAll == false) {
+                    switch (itemFilters.filterType) {
+                        case "range":
+                            array.forEach(that._parcelStatTypes, function (itemTypes, iType) {
 
-                switch (itemFilters.filterType) {
-                    case "range":
-                        array.forEach( that._parcelStatTypes, function (itemTypes, iType) {
-                            if(!that._parcelStatTypesColumn_Hidden[itemTypes]) {
-                                var varName = itemFilters.fieldName + "_" + itemTypes;
-                                that._createParcelBarChart(varName,that._filterGraphicsCount);
-                            };
-                        });
-                        break;
-                    case "choices":
-                        that._createParcelPieChart(itemFilters.fieldName);
-                        break;
-                    default:
+                                if (!that._parcelStatTypesColumn_Hidden[itemTypes]) {
+                                    var varName = itemFilters.fieldName + "_" + itemTypes;
+                                    that._createParcelBarChart(varName, that._filterGraphicsCount);
+                                }
+                                ;
+                            });
+                            break;
+                        case "choices":
+                            that._createParcelPieChart(itemFilters.fieldName);
+                            break;
+                        default:
 
+                    }
+                    ;
                 };
             });
         },
@@ -1007,14 +2417,97 @@
 
 
         /*Handle things*/
+        _handleCountySelection:function(id){
+            if(array.indexOf(this._localitiesPreCommitIDs,id) >= 0 ) {
+                //already exists, remove from selection.
 
+                this._localitiesPreCommitIDs.splice(array.indexOf(this._localitiesPreCommitIDs,id), 1);
+            } else {
+              //add to selection.
+
+                this._localitiesPreCommitIDs.push(id)
+            };
+            var localitiesIDString = this._localitiesPreCommitIDs.join();
+
+            if(this._localitiesPreCommitIDs.length == 0){
+                this._handleCountySelectionClear();
+            } else {
+                this._selectLocalities(localitiesIDString);
+                //var selectQuery = new Query();
+               // selectQuery.where = "OBJECTID IN ("+localitiesIDString+")";
+                //this._localityFeatureLayer.selectFeatures(selectQuery, FeatureLayer.SELECTION_NEW);
+                //SELECTION_NEW
+                //need to get the selected geometries.
+                //will happen at a button level
+                //this._performQueryTasks(evt.graphic.geometry,"polygon")
+
+
+            };
+
+
+        },
+        _handleCountySelectionClear:function(){
+            this._localityFeatureLayer.clearSelection();
+        },
+        _selectLocalities:function(localitiesIDString){
+            var that = this;
+            var selectQuery = new Query();
+            selectQuery.where = "OBJECTID IN ("+localitiesIDString+")";
+            this._localityFeatureLayer.selectFeatures(selectQuery, FeatureLayer.SELECTION_NEW,function(results){
+                that._localitiesPreCommitGraphics = results;
+
+
+
+            });
+        },
+        _handleCountyCommit:function(){
+            if(this._localitiesPreCommitGraphics.length > 0) {
+                var unionArray = array.map(this._localitiesPreCommitGraphics, function (item) {
+                    return item.geometry;
+                });
+                var union = geometryEngine.union(unionArray);
+                this._performQueryTasks(union,"polygon");
+
+            } else {
+                alert("You need to select at least on locality to proceed.");
+            }
+
+        },
+        _handleAboutClick:function(){
+
+            if(!this._aboutDialog){
+
+                this._aboutDialog = new Dialog({
+                    title: "About CURA MetroView Website",
+                    "class":"helpDialog",
+                    //content: "Test content.",
+                    style: "width: 500px",
+                    href:"about.html"
+                });
+            };
+            this._aboutDialog.show();
+        },
+        _handleHelpClick:function(){
+
+            if(!this._helpDialog){
+
+                this._helpDialog = new Dialog({
+                    title: "Using the CURA MetroView Website",
+                    "class":"helpDialog",
+                    //content: "Test content.",
+                    style: "width: 500px",
+                    href:"help.html"
+                });
+            };
+            this._helpDialog.show();
+        },
         _handleSliderChange: function () {
-            console.log("_handleSliderChange");
+
             var valueOnSlider = this._verticalSlider.get("value") * 1000;
             this._handleFilterChange("VMP_P1_V4",valueOnSlider, "bottom");
         },
         _handleFilterChange: function (variableName, value, operator) {
-            console.log("_handleFilterChange");
+
             var that = this;
             var operatorValue = {"top":"<=","bottom":">=","equals":"=","IN":"IN"};
             if(value.length >0) {
@@ -1042,13 +2535,19 @@
 
         },
         _handleGridSelection:function(event,filterObject){
-            console.log("_handleGridSelection");
+
             // Iterate through all currently-selected items
             var queryString = "";
             var submitqueryString = "";
             for(var id in this._parcelPropertyTypesGrid.selection){
                 if(this._parcelPropertyTypesGrid.selection[id]){
-                    queryString += ",\'"+this._parcelFilters[0].filterOptions[id].propertyType+"\'"
+                    //Single Family Large Lot
+                    if(this._parcelFilters[0].filterOptions[id].propertyType == "Single Family Large Lot"){
+                        queryString += ",\'SFLL\'"
+                    }else{
+                        queryString += ",\'"+this._parcelFilters[0].filterOptions[id].propertyType+"\'"
+                    };
+
                 };
             };
             if(queryString.length > 0) {
@@ -1057,32 +2556,50 @@
             this._handleFilterChange(filterObject.fieldName,submitqueryString,"IN");
         },
         _handleMapSelectionDropDownChange: function(selectionType) {
-            console.log(selectionType);
+
             switch(selectionType) {
                 case "polygon":
+                    domStyle.set(this._commitLocalitySelectionButton.domNode, 'display', 'none');
+                    domStyle.set(this._cancelLocalitySelectionButton.domNode, 'display', 'none');
                     domStyle.set(this._polygonDrawButton.domNode, 'display', 'inline');
                     domStyle.set(this._bufferDistanceContainer, 'display', 'none');
+                    this._localityFeatureLayer.hide();
                     break;
                 case "buffer":
                     domStyle.set(this._polygonDrawButton.domNode, 'display', 'none');
+                    domStyle.set(this._commitLocalitySelectionButton.domNode, 'display', 'none');
+                    domStyle.set(this._cancelLocalitySelectionButton.domNode, 'display', 'none');
                     domStyle.set(this._bufferDistanceContainer, 'display', 'inline');
+                    this._localityFeatureLayer.hide();
                     break;
-                case "region":
-                    console.log("need to zoom out to regions?");
+                case "county":
+
+                    this._localityFeatureLayer.show();
                     domStyle.set(this._polygonDrawButton.domNode, 'display', 'none');
                     domStyle.set(this._bufferDistanceContainer, 'display', 'none');
+                    domStyle.set(this._commitLocalitySelectionButton.domNode, 'display', 'inline');
+                    domStyle.set(this._cancelLocalitySelectionButton.domNode, 'display', 'inline');
+
+
+
+                    this._map.setExtent(this._localityFeatureLayer.fullExtent,true);
                     break;
                 default:
-                    console.log("Nothing selected the default behavour is to buffer a point.");
+
                     domStyle.set(this._polygonDrawButton.domNode, 'display', 'none');
                     domStyle.set(this._bufferDistanceContainer, 'display', 'none');
+                    domStyle.set(this._commitLocalitySelectionButton.domNode, 'display', 'none');
+                    domStyle.set(this._cancelLocalitySelectionButton.domNode, 'display', 'none');
+                    this._localityFeatureLayer.hide();
             }
         },
-        _handleResultsTabShow:function(resultsLocalTabReference,resultsGridLocalReference){
+        _handleResultsTabShow:function(resultsLocalTabReference,resultsParcelGridLocalReference,resultsHHIncomeGridLocalReference,resultsEmploymentGridLocalReference){
 
             on(resultsLocalTabReference , "show", lang.hitch(this,function (event) {
                 this._activeResultsSection = this._resultsTabToGraphicCountHash[resultsLocalTabReference.id];
-                resultsGridLocalReference.resize();
+                resultsParcelGridLocalReference.resize();
+                resultsHHIncomeGridLocalReference.resize();
+                resultsEmploymentGridLocalReference.resize();
             }));
         },
 
@@ -1100,11 +2617,109 @@
             return div;
 
         },
+        _addComma2:function(object, data, td, options) {
+            var formatted = number.format(data, {
+                places: 2,
+                locale: "en-us"
+            });
+            var div = document.createElement("div");
+            div.className = "renderedCell";
+            div.innerHTML = formatted;
+            return div;
+
+        },
+        _addGraphicsToMap:function(graphic){
+            this._map.graphics.add(graphic);
+
+        },
+        _showActiveGraphic:function(){},
+
+        _calculatePercentHHBelowPoverty:function(object, data, td, options){
+
+
+
+/*            {
+                Population_Estimate_Total_sum: 48542,
+                Households_Estimate_Total_sum: 17025,
+                Median_HHI_Weight_sum: 623115723,
+                HouseholdsBelowPoverty_sum: 4312,
+                Households_MedianIncome_sum: 1306444
+            }*/
+            var formatted = number.format(100*(object.HouseholdsBelowPoverty_sum/object.Households_Estimate_Total_sum), {
+                places: 2,
+                locale: "en-us"
+            })+"%";
+            var div = document.createElement("div");
+            div.className = "renderedCell";
+            div.innerHTML = formatted;
+            return div;
+        },
+        _calculateMedianHHIncome:function(object, data, td, options){
+
+
+
+            /*            {
+             Population_Estimate_Total_sum: 48542,
+             Households_Estimate_Total_sum: 17025,
+             Median_HHI_Weight_sum: 623115723,
+             HouseholdsBelowPoverty_sum: 4312,
+             Households_MedianIncome_sum: 1306444
+             }*/
+            var formatted ="$"+ number.format(object.Median_HHI_Weight_sum/object.Households_Estimate_Total_sum, {
+                    places: 0,
+                    locale: "en-us"
+                });
+            var div = document.createElement("div");
+            div.className = "renderedCell";
+            div.innerHTML = formatted;
+            return div;
+        },
+        _constructionYearCalc:function(object, data, td, options){
+            var formatted = number.format((object.VMP_P1_V3_avg), {
+                    places: 0,
+                    fractional:false,
+                     pattern: "0000"
+
+            });
+            var div = document.createElement("div");
+            div.className = "renderedCell";
+            div.innerHTML = formatted;
+            return div;
+        },
+        _landValueCalc:function(object, data, td, options){
+            var formatted = number.format((object.VMP_P1_V4_avg), {
+                    places: 2,
+                    locale: "en-us"
+                });
+            var div = document.createElement("div");
+            div.className = "renderedCell";
+            div.innerHTML = formatted;
+            return div;
+        },
+        _buildingImprovementsValueCalc:function(object, data, td, options){
+            var formatted = number.format((object.VMP_P1_V5_avg), {
+                    places: 2,
+                    locale: "en-us"
+                });
+            var div = document.createElement("div");
+            div.className = "renderedCell";
+            div.innerHTML = formatted;
+            return div;
+
+        },
+        _roundCell:function(object, data, td, options   ){
+
+            var formatted = Math.round(data);
+            var div = document.createElement("div");
+            div.className = "renderedCell";
+            div.innerHTML = formatted;
+            return div;
+        },
         _bufferPoint:function(point,distance){
 
             var newRandomColors = this._generateColor();
 
-            console.log(newRandomColors);
+
 
             //buffer symbol.
             var circleSymb = new SimpleFillSymbol(
@@ -1128,68 +2743,143 @@
             //that._map.graphics.clear();
             this._map.infoWindow.hide();
             var graphic = new Graphic(circle, circleSymb);
-            this._map.graphics.add(graphic);
-            //this._performParcelQueryTasks(circle.getExtent(),"polygon");
-            this._performParcelQueryTasks(circle,"polygon");
+            //this._map.graphics.add(graphic);
+            this._addGraphicsToMap(graphic);
+            //this._performQueryTasks(circle.getExtent(),"polygon");
+            this._performQueryTasks(circle,"polygon");
 
         },
         _initTools: function (evtObj) {
-            console.log("_initTools");
-            this._toolbar = toolbar = new Draw(evtObj.map);
-            toolbar.on("draw-end", lang.hitch(this,this._handlePolygonDrawEnd));
+            this._toolbar = new Draw(evtObj.map);
+            this._toolbar.on("draw-end", lang.hitch(this,this._handlePolygonDrawEnd));
             this._createTransparencySlider();
         },
-        _performParcelQueryTasks: function (geometry, geometryType) {
-            console.log("_performParcelQueryTasks");
+        _performQueryTasks: function (geometry, geometryType) {
+
             var that = this;
-            var query = new Query();
             this._filterGraphicsCount++;
+
+            var query = new Query();
+            var query_HHIncome = new Query();
+            var query_Employment = new Query();
+
+
+            //parcel data.
             query.geometry = geometry;
             query.returnGeometry = false;
             query.outStatistics = that._parcelStatisticsDefinition;
             query.groupByFieldsForStatistics = that._parcelGroupByFields;
             query.where = that._parcelWhereClause;
-            that._queryTask.execute(query, lang.hitch(that, "_selectFromService"));
+            var parcelDeferred = that._queryTask.execute(query);//, lang.hitch(that, "_selectFromService"));
+
+            //need to set up a set of ordered defers here
+            //HHIncome data.
+            query_HHIncome.geometry = geometry;
+            query_HHIncome.returnGeometry = false;
+            query_HHIncome.outStatistics = that._hHIncomeStatisticsDefinition;
+           // query_HHIncome.groupByFieldsForStatistics = that._hHIncomeGroupByFields;
+            var HHIncomeDeferred = that._queryTaskHHIncome.execute(query_HHIncome);//, lang.hitch(that, "_selectFromServiceTest"));
+
+            //Employment data.
+            query_Employment.geometry = geometry;
+            query_Employment.returnGeometry = false;
+            query_Employment.outStatistics = that._employmentStatisticsDefinition;
+            query_Employment.groupByFieldsForStatistics = that._employmentGroupByFields;
+            var employmentDeferred = that._queryTaskEmployment.execute(query_Employment);//, lang.hitch(that, "_selectFromServiceTest"));
+
+            var dl = new DeferredList([parcelDeferred, HHIncomeDeferred,employmentDeferred]);
+
+            dl.then(lang.hitch(that,function(result){
+                this._selectFromService(result);
+            }));
+
 
             this._map.setExtent(geometry.getExtent(),true);
         },
         _handlePolygonDrawEnd: function (evtObj) {
-            console.log("_handlePolygonDrawEnd");
+
             var geometry = evtObj.geometry;
             var newRandomColors = this._generateColor();
             /*After user draws shape on map using the draw toolbar compute the zonal*/
             this._map.showZoomSlider();
             //this._map.graphics.clear();
 
-            var symbol = new SimpleFillSymbol("none", new SimpleLineSymbol("dashdot", new Color(newRandomColors[0]), 2), new Color(newRandomColors[1]));
+            var symbol = new SimpleFillSymbol(
+                SimpleFillSymbol.STYLE_SOLID,
+                new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, new Color(newRandomColors[0]), 2),
+                new Color([0, 0, 255, 0.5]));
+
+
+            //var symbol = new SimpleFillSymbol("none", new SimpleLineSymbol("dashdot", new Color(newRandomColors[0]), 2), new Color(newRandomColors[1]));
             var graphic = new Graphic(geometry, symbol);
 
-            this._map.graphics.add(graphic);
+            //this._map.graphics.add(graphic);
+            this._addGraphicsToMap(graphic);
             this._toolbar.deactivate();
 
             //var query = new Query();
             //query.geometry = geometry;
 
-            this._performParcelQueryTasks(geometry,"polygon");
+            this._performQueryTasks(geometry,"polygon");
         },
         _selectFromService: function (response) {
-            console.log("_selectFromService");
-            var LandValueAverageArray = array.map(response.features, function(item,index){
+
+            var LandValueAverageArray = array.map(response[0][1].features, function(item,index){
+                item.attributes.VMP_P1_V3_avg = Math.round(item.attributes.VMP_P1_V3_sum / item.attributes.VMP_P1_V3_NotNull_sum);
+                item.attributes.VMP_P1_V4_avg = item.attributes.VMP_P1_V4_sum / item.attributes.VMP_P1_V4_NotNull_sum;
+                item.attributes.VMP_P1_V5_avg = item.attributes.VMP_P1_V5_sum / item.attributes.VMP_P1_V5_NotNull_sum;
+
+                /*VMP_P1_V3_NotNull_avg
+                VMP_P1_V3_NotNull_sum
+                VMP_P1_V3_avg
+                VMP_P1_V3_sum
+                VMP_P1_V4_NotNull_avg
+                VMP_P1_V4_NotNull_sum
+                VMP_P1_V4_avg
+                VMP_P1_V4_sum
+                VMP_P1_V5_NotNull_avg
+                VMP_P1_V5_NotNull_sum
+                VMP_P1_V5_avg
+                VMP_P1_V5_sum
+                VMP_P1_V6_avg
+                VMP_P1_V6_sum
+                VMP_P1_V7_avg
+                VMP_P1_V7_sum*/
+
+
                 return item.attributes;
             });
-            this._updateResults(LandValueAverageArray);
+
+            var hHIncomeArray = array.map(response[1][1].features, function(item,index){
+                console.log("hHIncomeArray");
+                console.log(item);
+                return item.attributes;
+            });
+
+            var employmentArray = array.map(response[2][1].features, function(item,index){
+                console.log("employmentArray");
+                console.log(item);
+                return item.attributes;
+            });
+
+            //need to create the arrays for the other two resonses
+
+            this._updateResults([LandValueAverageArray,hHIncomeArray,employmentArray]);
         },
         _updateResults:function(data){
-            console.log("_updateResults");
+
             this._activeResultsSection = this._filterGraphicsCount;
             var resultsLocalTabReference = this._createResultsTabs();
-            var resultsGridLocalReference = this._createResultsGrids(data);
-            this._handleResultsTabShow(resultsLocalTabReference,resultsGridLocalReference);
+            var _createResultsGridsArray = this._createResultsGrids(data);
+            var resultsParcelGridLocalReference = _createResultsGridsArray[0];
+            var resultsHHIncomeGridLocalReference = _createResultsGridsArray[1];
+            var resultsEmploymentGridLocalReference = _createResultsGridsArray[2];
+            this._handleResultsTabShow(resultsLocalTabReference,resultsParcelGridLocalReference,resultsHHIncomeGridLocalReference,resultsEmploymentGridLocalReference);
             this._createInitialCharts();
 
         },
         _getSelectorIDs: function (features) {
-            console.log("_getSelectorIDs");
+
             var selectorIDs = "";
             for (var x = 0; x < features.length; x++) {
                 selectorIDs = selectorIDs + " , " + features[x].attributes["OBJECTID"];
@@ -1215,7 +2905,84 @@
             this._activeColor = "rgb("+r+","+g+","+b+")";
             var colors = [[r,g,b],[r,g,b,.25]];
             return colors;
+        },
+        _createGoodPercentFormat:function(numberToFormat){
+            return parseFloat(number.format(numberToFormat, {places: 2,locale: "en-us"}));
+        },
+        _createGoodIntegerFormat:function(numberToFormat){
+            console.log(numberToFormat);
+            console.log(parseFloat(number.format(numberToFormat, {places: 2,locale: "en-us"})));
+            return parseFloat((number.format(numberToFormat, {places: 2,locale: "en-us"})).replace(",",""));
+            //return number.format(numberToFormat, {places: 2,locale: "en-us"});
+        },
+
+
+        //TUtorial Stuff
+        _startUpTutorial:function(){
+            var that = this;
+            var dialogContainerNode = domConstruct.toDom("<div></div>");
+            var dialogTextNode = domConstruct.toDom("<div>Some Text for the User. Like Hello User!!</div>");
+            var dialogButtonsNode = domConstruct.toDom("<div></div>");
+            var nodeList = [this._filtersNodeID,'mapTitlePane','resultsTitlePane','popupLocation3'];
+            var textList = ['Tutorial 1','Tutorial 2','Tutorial 3','Tutorial 4'];
+
+
+            dialogContainerNode.appendChild(dialogTextNode);
+            dialogContainerNode.appendChild(dialogButtonsNode);
+
+            var myDialog = new TooltipDialog({
+                content:dialogContainerNode,
+                closable:true
+            });
+
+
+            var dialog = new Dialog({
+                title: "MetroView Tutorial",
+                // Create Dialog content
+                //content: "Would you like to take the tutorial?" + "<br />If not, close this window and you can simply click on the map to get started.<br /><br /><div id=\"startTutorial\"></div>&nbsp;&nbsp;<div id=\"cancelTutorial\"></div>"
+                content:"Welcome to MetroView.<p> To get started you can simply click on the map to create a two mile buffer and get the resulting data.<p>The results will be dislayed below the map<p>You can add more study areas simply by clicking on the map in different places<p></p> To customize your study area use the options in the left pane.<p>Thanks for using MetroView.</p>     "
+            });
+             dialog.show();
+
+            //popup.open({
+            //    popup: myDialog,
+            //    x:300,
+            //    y:250,
+            //    style:{width: "300px"},
+            //    //around: dom.byId('navbar')
+            //});
+
+
+            var nextTutorialPoint = function(){
+
+                that._tutorialCount++;
+                popup.close(myDialog);
+                html.set(dialogTextNode, textList[that._tutorialCount]);
+                popup.open({
+                    popup: myDialog,
+                    around: dom.byId(nodeList[that._tutorialCount])
+                });
+            };
+
+            var nextButton = new Button({
+                label: "Next",
+                onClick: nextTutorialPoint
+            });
+            dialogButtonsNode.appendChild(nextButton.domNode);
+            nextButton.startup();
+
+            var cancelButton = new Button({
+                label: "Quit",
+                onClick: function(){
+                    popup.close(myDialog);
+                }
+            });
+            dialogButtonsNode.appendChild(cancelButton.domNode);
+            cancelButton.startup();
+
         }
+
+
 
 
     };

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="./images/favicon.ico">
+
+    <title>CURA MetroTracker</title>
+
+    <link rel="stylesheet" href="http://js.arcgis.com/3.14/dojo/resources/dojo.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.14/dijit/themes/tundra/tundra.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.14/esri/css/esri.css">
+
+
+    <script>dojoConfig = { parseOnLoad: true }</script>
+
+    <script src="http://js.arcgis.com/3.14/"></script>
+
+
+
+    <script>
+
+        require([
+        "dijit/TooltipDialog",
+        "dijit/form/TextBox",
+        "dijit/form/Button",
+        "dijit/form/DropDownButton",
+        "dojo/dom",
+        "dijit/popup",
+        "dojo/dom-construct",
+        "dojo/html",
+        "dojo/domReady!"
+    ], function(TooltipDialog, TextBox, Button, DropDownButton, dom, popup, domConstruct, html){
+
+        var dialogContainerNode = domConstruct.toDom("<div></div>");
+        var dialogTextNode = domConstruct.toDom("<div>Some Text for the User. Like Hello User!!</div>");
+        var dialogButtonsNode = domConstruct.toDom("<div></div>");
+        var counter = 0;
+        var nodeList = ['popupLocation1','popupLocation2','popupLocation3'];
+        var textList = ['Tutorial 1','Tutorial 2','Tutorial 3'];
+
+        var nextTutorialPoint = function(){
+            counter++;
+            popup.close(myDialog);
+            html.set(dialogTextNode, textList[counter]);
+            popup.open({
+                popup: myDialog,
+                around: dom.byId(nodeList[counter])
+            });
+        };
+
+        dialogContainerNode.appendChild(dialogTextNode);
+        dialogContainerNode.appendChild(dialogButtonsNode);
+
+        var myDialog = new TooltipDialog({
+            content:dialogContainerNode,
+            closable:true
+        });
+
+        var myButton = new Button({
+            label: "show tooltip dialog",
+            onClick: function(){
+                popup.open({
+                    popup: myDialog,
+                    around: dom.byId('popupLocation')
+                });
+            }
+        });
+        dom.byId("dropDownButtonContainer").appendChild(myButton.domNode);
+        myButton.startup();
+
+            var nextButton = new Button({
+                label: "Next",
+                onClick: nextTutorialPoint
+            });
+            dialogButtonsNode.appendChild(nextButton.domNode);
+            nextButton.startup();
+
+            var cancelButton = new Button({
+                label: "Quit",
+                onClick: function(){
+                    popup.close(myDialog);
+                }
+            });
+            dialogButtonsNode.appendChild(cancelButton.domNode);
+            cancelButton.startup();
+    });
+
+    </script>
+</head>
+<body class="tundra">
+<div id="dropDownButtonContainer"></div>
+<br /><br /><br /><br /><br /><br /><br /><br />
+<div id="popupLocation">Popup around here</div>
+<br /><br /><br /><br /><br /><br /><br /><br />
+<div id="popupLocation2">Popup around here Next</div>
+<br /><br /><br /><br /><br /><br /><br /><br />
+<div id="popupLocation3">Popup around here Next</div>
+</body>
+</html>

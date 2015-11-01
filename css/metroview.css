@@ -13,8 +13,8 @@ html, body {
 
 .filterRanges {
     /*float:left;*/
-    margin-bottom: 5px;
-    margin-top: 5px;
+    margin-bottom: 10px;
+    margin-top: 10px;
 
 }
 
@@ -43,13 +43,13 @@ html, body {
 
 .mapBorderContainer{
 
-    height: 700px;
+    height: 500px;
     width:100%;
 }
 
 .map {
 
-    height:600px
+    height:400px
 }
 
 .filterTextBoxRanges{
@@ -64,6 +64,9 @@ html, body {
     margin-bottom: 15px;
 }
 
+.filterCharts_HHIncomePoverty{
+    height:135px;
+}
 .bufferDistanceInput{
     width: 50px;
 }
@@ -79,3 +82,118 @@ html, body {
     background:none;
     color:white;
 }
+
+.mapSelectorText{
+ padding-bottom: 10px;
+}
+
+.mapSelector{
+    width:140px;
+}
+
+.helpDialog{
+    z-index: 9999 !important;
+}
+
+.filterParcelResults{
+    height:300px
+}
+.filterHHIncomResults{
+    height:100px
+}
+.filterEmploymentResults{
+    height:450px
+}
+
+.filterTableHeader {
+font-size: x-large;
+padding-top: 10px;
+    padding-bottom: 10px;
+    font-weight: bold;
+}
+
+.supported{
+    padding:5px 5px 5px 5px;
+}
+/* colors the underlay black instead of white
+ * We're using '.claro .dijitDialogUnderlay' as our selector,
+ * to match the specificity in claro.css */
+.tundra .dijitDialogUnderlay { background:#000; }
+
+/*.navbar-fixed-top{*/
+    /*left:272px;*/
+/*}*/
+
+/*.sidebar{*/
+/*top:100px;*/
+    /*}*/
+.main{padding: 10px 0px 0px 10px}
+
+/*h2{margin-top: 0px}*/
+/*
+.navbar{
+    min-height: 101px;
+}
+
+.navbar-brand{
+    padding:0px 0px 0px 0px;
+}*/
+
+td {
+     vertical-align: top;
+}
+
+.pieChartTitle {
+
+    width:100%;
+    font-size: x-large;
+    text-align: center;
+}
+
+.pieChartTitle_Poverty
+{
+    font-size:large;
+    text-align: center;
+}
+.filterBubbleCharts{
+
+    height:500px;
+}
+.filterChartsHHIncomeBar{
+  }
+
+.chartsMain{
+    clear: both;
+}
+.chartsSub{}
+.chartsSubHHIncomePercentPovertyBar{
+    float:left;
+    width:50%;
+
+}
+.chartsSubHHIncomePercentPoverty{}
+.HHIncomeGridDiv{
+    width:100%;
+}
+.HHIncomeGridLeftDiv{
+    width:65%;
+    float:left;
+}
+.HHIncomeGridRightDiv{
+    width:35%;
+    float:right;
+}
+.HHIncomeGrid{
+    width:50%;
+    float: left;
+}
+
+.filterLegendCharts_HHIncomePovertyContainer{
+    font-size: x-small;
+    margin: auto;
+    width: 60%;
+    border:1px solid black;
+    padding: 10px;
+
+}
+

@@ -9,7 +9,7 @@
     <meta name="author" content="">
     <link rel="icon" href="./images/favicon.ico">
 
-    <title>CURA MetroTracker</title>
+    <title>CURA MetroView</title>
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
@@ -50,7 +50,6 @@
 </head>
 
 <body class="tundra">
-
 <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container-fluid">
         <div class="navbar-header">
@@ -60,14 +59,13 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="#">CURA MetroTracker</a>
+
+            <a class="navbar-brand" href="#">MetroView</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav navbar-right">
-                <li><a href="#">Dashboard</a></li>
-                <li><a href="#">Settings</a></li>
-                <li><a href="#">Profile</a></li>
-                <li><a href="#">Help</a></li>
+                <li><a href="#" id="aboutClick">About</a></li>
+                <li><a href="#" id="helpClick">Help</a></li>
             </ul>
             <form class="navbar-form navbar-right">
                 <!--<input type="text" class="form-control" placeholder="Search...">-->
@@ -76,25 +74,21 @@
         </div>
     </div>
 </nav>
-
-<div class="container-fluid">
+<div  class="container-fluid">
     <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
             <ul class="nav nav-sidebar">
-                <li class="active"><a href="#">Filters<span class="sr-only">(current)</span></a></li>
+                <!--<li class="active"><a href="#">Study Area Filters<span class="sr-only">(current)</span></a></li>-->
+                <li> <img src="images/CURASmall.png"></li>
                 <li><div id="filterContainer"></div></li>
+                <li><div class="supported">The MetroView website is supported by a grant from the National Associaton of Realtors and by in-kind support from the Richmond Association of Realtors.</div></li>
             </ul>
-
-
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-            <h1 class="page-header">Dashboard</h1>
-
-            <h2 class="sub-header">Map Section</h2>
-
+            <br /><br /><br />
             <div id="mapTitlePane" data-dojo-type="dijit/TitlePane" data-dojo-props="title: 'MetroView Map','class':'mapTitlepane'">
 
-                <div style="position:absolute; right:100px; top:200px; z-Index:999;">
+                <div style="position:absolute; right:45px; top:107px; z-Index:999;">
                     <div data-dojo-type="dijit/TitlePane" data-dojo-props="title:'Switch Basemap', closable:false, open:false">
                         <div data-dojo-type="dijit/layout/ContentPane" style="width:380px; height:280px; overflow:auto;">
                             <div id="basemapGallery"></div>
@@ -112,14 +106,12 @@
                     </div>
                 </div>
             </div>
-
-            <h2 class="sub-header">Results Section</h2>
             <div id="resultsTitlePane" data-dojo-type="dijit/TitlePane" data-dojo-props="title: 'MetroView Results'">
                 <div id="resultsTabContainer"></div>
             </div>
 
 
-            <h2 class="sub-header">To Do:</h2>
+      <!--      <h2 class="sub-header">To Do:</h2>
             <ul>
                 <li>In each result section list filters that were active</li>
                 <li>Clean up UX - CURA colors? Other copy they want in the page? I'm not sold on some of the filter aesthetics</li>
@@ -132,12 +124,9 @@
                 <li>Clean up numbers in charts</li>
                 <li>Zoom to select polygon when tab is selected</li>
                 <li>Test in GitHub</li>
-            </ul>
+            </ul>-->
         </div>
     </div>
 </div>
-
-
-
 </body>
 </html>
