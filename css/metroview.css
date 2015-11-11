@@ -1,8 +1,8 @@
 html, body {
     width: 100%;
-    height: 100%;
+    height: 1000px;
     margin: 0;
-    overflow:scroll;
+
 }
 
 #layoutContainer {
@@ -15,6 +15,7 @@ html, body {
     /*float:left;*/
     margin-bottom: 10px;
     margin-top: 10px;
+    margin-left: 10px;
 
 }
 
@@ -47,13 +48,19 @@ html, body {
     width:100%;
 }
 
+.ResultsTabContainer{
+    width:100%;
+    height:5000px;
+
+}
+
 .map {
 
     height:400px
 }
 
 .filterTextBoxRanges{
-    height: 300px;
+    /*height: 300px;*/
 }
 
 .parcelTitleBarCharts{
@@ -106,8 +113,8 @@ html, body {
 }
 
 .filterTableHeader {
-font-size: x-large;
-padding-top: 10px;
+    font-size: x-large;
+    padding-top: 10px;
     padding-bottom: 10px;
     font-weight: bold;
 }
@@ -127,7 +134,7 @@ padding-top: 10px;
 /*.sidebar{*/
 /*top:100px;*/
     /*}*/
-.main{padding: 10px 0px 0px 10px}
+.main{padding: 10px 0px 0px 0px}
 
 /*h2{margin-top: 0px}*/
 /*
@@ -148,6 +155,13 @@ td {
     width:100%;
     font-size: x-large;
     text-align: center;
+    margin-top: 10px;
+}
+
+.pieChartSubTitle{
+    width:100%;
+    font-size:smaller;
+    text-align: center;
 }
 
 .pieChartTitle_Poverty
@@ -157,7 +171,7 @@ td {
 }
 .filterBubbleCharts{
 
-    height:500px;
+    height:400px;
 }
 .filterChartsHHIncomeBar{
   }
@@ -168,6 +182,7 @@ td {
 .chartsSub{}
 .chartsSubHHIncomePercentPovertyBar{
     float:left;
+
     width:50%;
 
 }
@@ -197,3 +212,90 @@ td {
 
 }
 
+.employmentPieChartContainer{
+    width:50%;
+    float:left;
+}
+
+.employmentPieLegend{
+    font-size: x-small;
+    margin: auto;
+    width: 60%;
+}
+
+.parcelCharts{
+    width:50%;
+    float:left;
+}
+.parcelLegendCharts{
+    width:50%;
+    float:left;
+
+}
+.parcelChartsClear{
+ clear: both;
+}
+
+.internalNav{
+    border:1px solid black;
+    float:right;
+    padding: 5px;
+    margin-bottom: 15px;
+}
+
+.soria .dijitTitlePaneContentInner {
+    padding: 0 0 0 0;
+}
+
+#selectOptions{
+    padding-left: 10px;
+}
+
+.selectToolButtons {
+    padding-left: 10px;
+    padding-bottom: 10px;
+}
+
+.LocalitySelectionButton span{
+    width: 150px;
+    }
+
+
+
+.box {
+    position:relative;
+}
+
+.overlay {
+    position:absolute;
+    top:500;
+    left:500;
+    right:500;
+    bottom:500px;
+    background-color:rgba(0, 0, 0, 0.85);
+    z-index:9999;
+    color:black;
+}
+
+#loadingOverlay {
+    background:  url('//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dijit/themes/claro/images/loadingAnimation.gif') no-repeat 10px 23px;
+    height:50px;
+    width:50px;
+    margin:auto;
+}
+
+.overlayInner {
+    position:relative;
+    top:250px;
+    margin: auto;
+    width: 300px;
+    border:3px solid #005f81;
+    padding: 10px;
+    background-color: #ffffff;
+
+}
+
+.overlayText{
+    width:100%;
+    text-align: center;
+}

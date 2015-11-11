@@ -72,6 +72,8 @@
   "dijit/popup",//71
   "dojo/html",//72
   "dojox/charting/plot2d/Bubble",//73
+  "dojo/window",//74
+    "dojo/query",//75
   "dojox/charting/plot2d/Markers",
   "dojox/charting/axis2d/Default",
 
@@ -154,7 +156,9 @@
     TooltipDialog,//70
     popup,//71
     html,//72
-    Bubble//73
+    Bubble,//73
+    win,//74
+    query//75
 ) {
 
 
@@ -1211,12 +1215,12 @@
             }
         },
         _MSAIndicators:{
-            "Households_MedianIncome":58891,
+            "Households_MedianIncome":57286,
             "Households_PercentBelowPoverty":11.38
         },
         _USIndicators:{
-            "Households_MedianIncome":53046,
-            "Households_PercentBelowPoverty":11.6
+            "Households_MedianIncome":52250,
+            "Households_PercentBelowPoverty":14.8
         },
         //Source: U.S. Census Bureau, 2009-2013 5-Year American Community Survey
         _init: function () {
@@ -1330,7 +1334,7 @@
             var filterNode = dom.byId(this._filtersNodeID);
             //create the filters and put them in the left nav section as designated by this._filterNodeID
 
-            var tpselectOptions = new TitlePane({title:"Map Selection Tools", content: "<div id=\"selectOptions\" ><div class=\"mapSelectorText\">Select an area to study by: </div></div><br /><div id=\"polyDraw\"></div><div id=\"bufferDistance\"></div><div id=\"localitiesTools\"><div id=\"localCancel\"></div><div id=\"localCommit\"></div></div>"});
+            var tpselectOptions = new TitlePane({title:"Map Selection Tools", content: "<div id=\"selectOptions\" ><div class=\"mapSelectorText\">Select an area to study by: </div></div><br /><div class=\"selectToolButtons\"><div id=\"polyDraw\"></div><div id=\"bufferDistance\"></div><div id=\"localitiesTools\"><div id=\"localCancel\"></div><div id=\"localCommit\"></div></div></div>"});
             filterNode.appendChild(tpselectOptions.domNode);
             tpselectOptions.startup();
 
@@ -1344,7 +1348,7 @@
         _createResultsTabContainer: function(){
 
             this._resultsTabContainer = new TabContainer({
-                style: "height: 500px; width: 100%;"
+               "class": "ResultsTabContainer"
             }, "resultsTabContainer");
             this._resultsTabContainer.startup();
         },
@@ -1386,7 +1390,7 @@
 
 
             if(!this._filterTitlePanes["parcelPropertyType"]) {
-                this._filterTitlePanes["parcelPropertyType"] = new TitlePane({title:"Select Property Types", content: "<div id=\"parcelPropertyType\"></div>"});
+                this._filterTitlePanes["parcelPropertyType"] = new TitlePane({title:"Select Property Types", open:false, content: "<div id=\"parcelPropertyType\"></div>"});
                  filterNode.appendChild(this._filterTitlePanes["parcelPropertyType"].domNode);
             }
 
@@ -1450,7 +1454,8 @@
             if (!this._filterTitlePanes["parcelAttributeChoices"]) {
             this._filterTitlePanes["parcelAttributeChoices"] = new TitlePane({
                 title: "Parcel Attributes",
-                "class":"filterTextBoxRanges"
+                "class":"filterTextBoxRanges",
+                open:false
             });
             filterNode.appendChild(this._filterTitlePanes["parcelAttributeChoices"].domNode);
         }
@@ -1591,7 +1596,8 @@
                 onClick: lang.hitch(that, function () {
                     // Do something:
                   this._handleCountyCommit();
-                })
+                }),
+                "class":"LocalitySelectionButton"
             }, "localCommit");
             this._commitLocalitySelectionButton.startup();
             //and then immediately hide the button for later use.
@@ -1603,7 +1609,8 @@
                 label: "Clear Current Selection",
                 onClick: lang.hitch(that, function () {
                     this._handleCountySelectionClear();
-                })
+                }),
+                "class":"LocalitySelectionButton"
             }, "localCancel");
             this._cancelLocalitySelectionButton.startup();
             //and then immediately hide the button for later use.
@@ -1622,7 +1629,7 @@
             this._map = new Map("map", {
                 basemap: "topo",
                 center: [-77.455, 37.469],
-                zoom: 14
+                zoom: 10
             });
 
 
@@ -1738,10 +1745,13 @@
 
 
             //_createParcelPieChart:function(chartingNode,chartingLegendNode){
-            var chartingPieNodeEmployeesTitle = domConstruct.create("div",{ "innerHTML":"Land Use Counts","class":"pieChartTitle" },this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
-            var chartingPieNode = domConstruct.create("div",{ id:"chartsDivSelection_"+this._filterGraphicsCount,"class":"filterCharts" },this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
-            var chartingPieLegendNode = domConstruct.create("div",{ id:"chartsLegendDivSelection_"+this._filterGraphicsCount,"class":"filterLegendCharts" },this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
+            var chartingParcelChartsContainer = domConstruct.create("div",{ },this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
+            var chartingPieNodeParcelsTitle = domConstruct.create("div",{ "innerHTML":"Land Use Counts","class":"pieChartTitle" },chartingParcelChartsContainer,"last");
 
+            var chartingPieNode = domConstruct.create("div",{ id:"chartsDivSelection_"+this._filterGraphicsCount,"class":"parcelCharts" },chartingParcelChartsContainer,"last");
+            var chartingPieLegendContainer = domConstruct.create("div",{"innerHTML":"<br /><br />" ,"class":"parcelLegendCharts" },chartingParcelChartsContainer,"last");
+            var chartingPieLegendNode = domConstruct.create("div",{ id:"chartsLegendDivSelection_"+this._filterGraphicsCount, },chartingPieLegendContainer,"last");
+            var chartingPieNodeParcelsClear = domConstruct.create("div",{ "class":"parcelChartsClear" },chartingParcelChartsContainer,"last");
 
             //Charting the results...
 
@@ -1884,18 +1894,28 @@
             this._tearDownReferences[variableName+"_"+filterGraphicsCount] = [chartingTitleBarNode,chartingBarNode,chartingBarLegendNode,chartingBarDividerNode,barChart,legend];
 
         },
-        _createEmploymentPieChart:function(){
+        _createEmploymentPieChart:function(employmentContainer){
 
 //Establishments
 //Employees
 
-            var chartingContainer = domConstruct.create("div",{ id:"chartsDivSelectionSpan_"+this._filterGraphicsCount,"class":"filterCharts","innerHTML":"" },this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
-            var chartingPieNodeEmployeesTitle = domConstruct.create("div",{ "innerHTML":"Employees","class":"pieChartTitle" },chartingContainer,"last");
-            var chartingPieNodeEmployees = domConstruct.create("div",{ id:"chartsDivSelectionEmployment_"+this._filterGraphicsCount,"class":"filterCharts" },chartingContainer,"last");
-            var chartingPieNodeEstablishementsTitle = domConstruct.create("div",{ "innerHTML":"Establishments","class":"pieChartTitle" },chartingContainer,"last");
-            var chartingPieNode = domConstruct.create("div",{ id:"chartsDivSelectionEstablishments_"+this._filterGraphicsCount,"class":"filterCharts" },chartingContainer,"last");
-            var chartingPieLegendNode = domConstruct.create("div",{ id:"chartsLegendDivSelectionEmployment_"+this._filterGraphicsCount,"class":"filterLegendCharts" },this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
+            var chartingContainer = domConstruct.create("div",{ id:"chartsDivSelectionSpan_"+this._filterGraphicsCount,"class":"filterCharts","innerHTML":"" },employmentContainer,"last");
+
+            var chartingPieNodeEmployeesContainer = domConstruct.create("div",{"class":"employmentPieChartContainer" },chartingContainer,"last");
+            var chartingPieNodeEmployeesTitle = domConstruct.create("div",{ "innerHTML":"Employees","class":"pieChartTitle" },chartingPieNodeEmployeesContainer,"last");
+            var chartingPieNodeEmployees = domConstruct.create("div",{ id:"chartsDivSelectionEmployment_"+this._filterGraphicsCount,"class":"filterCharts" },chartingPieNodeEmployeesContainer,"last");
+
+            var chartingPieNodeEstablishementsContainer = domConstruct.create("div",{"class":"employmentPieChartContainer" },chartingContainer,"last");
+            var chartingPieNodeEstablishementsTitle = domConstruct.create("div",{ "innerHTML":"Establishments","class":"pieChartTitle" },chartingPieNodeEstablishementsContainer,"last");
+            var chartingPieNode = domConstruct.create("div",{ id:"chartsDivSelectionEstablishments_"+this._filterGraphicsCount,"class":"filterCharts" },chartingPieNodeEstablishementsContainer,"last");
+
+            var chartingPieLegendNodeContainer = domConstruct.create("div",{"class":"employmentPieLegend"},chartingContainer,"last");
+            var chartingPieLegendNode = domConstruct.create("div",{ id:"chartsLegendDivSelectionEmployment_"+this._filterGraphicsCount },chartingPieLegendNodeContainer,"last");
+
             var chartingBubbleNodeEstablishementsTitle = domConstruct.create("div",{ "innerHTML":"Employment Bubble Graph","class":"pieChartTitle" },chartingContainer,"last");
+            var chartingBubbleNodeEstablishementsSubTitle = domConstruct.create("div",{ "innerHTML":"Size corresponds to Percent Employees","class":"pieChartSubTitle" },chartingContainer,"last");
+
+
             var chartingBubbleNode = domConstruct.create("div",{ id:"chartsDivSelectionBubble_"+this._filterGraphicsCount,"class":"filterBubbleCharts" },chartingContainer,"last");
 
 
@@ -1972,15 +1992,15 @@
                 </table>";
 
                 //var Text = ": <br /><br />Establishments "+employeeStuff["Percent Establishments"]+ "% <br /> "+" Employees "+employeeStuff["Percent Employees"]+ "%  ";
-                return {"size": employeeStuff["Percent Employees"],"y": employeeStuff["Percent Establishments"],"x": employeeStuff["Percent Establishments"], "text": Text, "textID": employeeStuff["Employment Indicator"]};
+                return {"size": employeeStuff["Percent Employees"],"y": employeeStuff["Percent Employees"],"x": employeeStuff["Percent Establishments"], "text": Text, "textID": employeeStuff["Employment Indicator"]};
 
             });
             console.log(bubbleStoreSeriesEmployee);
             pieChart.addSeries("Industry Sectors",pieStoreSeries);
             pieChartEmployees.addSeries("Industry Sectors",pieStoreSeriesEmployee);
 
-            bubbleChartEmployment.addAxis("x");
-            bubbleChartEmployment.addAxis("y", {vertical: true, fixLower: "major", fixUpper: "major"});
+            bubbleChartEmployment.addAxis("x",{"title":"Percent Establishments","titleOrientation":"away"});
+            bubbleChartEmployment.addAxis("y", {vertical: true, fixLower: "major", fixUpper: "major","title":"Percent Employees","titleOrientation":"away"});
 
             bubbleChartEmployment.addSeries("Industry Sectors",bubbleStoreSeriesEmployee);
 
@@ -1995,7 +2015,7 @@
             // Render the chart!
             pieChart.render();
             pieChartEmployees.render();
-            var legend = new Legend({ chart: pieChart,horizontal:false }, chartingPieLegendNode);
+            var legend = new Legend({ chart: pieChart,horizontal:2 }, chartingPieLegendNode);
             bubbleChartEmployment.render();
 
         },
@@ -2037,13 +2057,14 @@
                 precision: 1,
                 labelOffset: 0,
                 labelStyle: "columns",      // default/columns/rows/auto
-                htmlLabels: true            // use HTML to draw labels
+                htmlLabels: true,            // use HTML to draw labels
+                stroke: {color: "black", width: 1}
             });
 
 
             var chartData = [
-                { x: "1", y: percentBelowPoverty, text:"Below poverty." },
-                { x: "1", y: percentAbovePoverty,text:"Above poverty." }
+                { x: "1", y: percentBelowPoverty, text:"Below poverty.",fill:"#FF7F50" },
+                { x: "1", y: percentAbovePoverty,text:"Above poverty.",fill:"#6B8E23" }
             ];
 
             pieChart.addSeries("Poverty Level",chartData);
@@ -2061,10 +2082,12 @@
             var medianHHIncome = this._createGoodIntegerFormat(this._resultsHHIncomedStore[this._filterGraphicsCount].data[0].Median_HHI_Weight_sum/this._resultsHHIncomedStore[this._filterGraphicsCount].data[0].Households_Estimate_Total_sum);
 
             var HHIncome_PercentPovertyBar = domConstruct.create("div",{"class":"chartsSubHHIncomePercentPovertyBar" },HHIncome_Charts_Main,"last");
-            var chartingBarNodePoverty = domConstruct.create("div",{ id:"barChartsPovertyDivSelectionHHIncome_"+this._filterGraphicsCount,"class":"filterChartsHHIncomeBar" },HHIncome_PercentPovertyBar,"last");
+            var chartingPieNodeTitle = domConstruct.create("div",{ "innerHTML":"<br />Percent Poverty by Region.","class":"pieChartTitle_Poverty" },HHIncome_PercentPovertyBar,"last");
+            var chartingBarNodePoverty = domConstruct.create("div",{ id:"barChartsPovertyDivSelectionHHIncome_"+this._filterGraphicsCount,"class":"filterChartsHHIncomeBar" },chartingPieNodeTitle,"last");
             this._createHHIncomeBarChart(chartingBarNodePoverty,this._createGoodPercentFormat(percentBelowPoverty),this._MSAIndicators.Households_PercentBelowPoverty,this._USIndicators.Households_PercentBelowPoverty);
 
             var HHIncome_MedianHHIBar = domConstruct.create("div",{"class":"chartsSubHHIncomePercentPovertyBar" },HHIncome_Charts_Main,"last");
+            var chartingPieNodeTitle = domConstruct.create("div",{ "innerHTML":"<br />Median Household Income by Region.","class":"pieChartTitle_Poverty" },HHIncome_MedianHHIBar,"last");
             var chartingBarNodeIncome = domConstruct.create("div",{ id:"barChartsIncomeDivSelectionHHIncome_"+this._filterGraphicsCount,"class":"filterChartsHHIncomeBar" },HHIncome_MedianHHIBar,"last");
             this._createHHIncomeBarChart(chartingBarNodeIncome,medianHHIncome,this._MSAIndicators.Households_MedianIncome,this._USIndicators.Households_MedianIncome);
 
@@ -2093,7 +2116,7 @@
                     text: "Study Area"
                 }, {
                     value: 2,
-                    text: "MSA"
+                    text: "Richmond MSA"
                 }, {
                     value: 3,
                     text: "US"
@@ -2115,22 +2138,22 @@
                 tooltip: studyAreaValue,
                 text: "Study Area",
                 stroke: {
-                    color: "blue",
+                    color: "black",
                     width: 2
                 },
-                fill: "lightblue"
+                fill: "#FFA500"
             }, ]);
 
             c.addSeries("MSA", [{
                 y: MSAValue,//this._MSAIndicators.Households_PercentBelowPoverty,
                 x: 2,
                 tooltip: MSAValue,//this._MSAIndicators.Households_PercentBelowPoverty,
-                text: "MSA",
+                text: "Richmond MSA",
                 stroke: {
-                    color: "blue",
+                    color: "black",
                     width: 2
                 },
-                fill: "lightblue"
+                fill: "#BDB76B"
             }, ]);
 
 
@@ -2140,10 +2163,10 @@
                 tooltip: USValue,//this._USIndicators.Households_PercentBelowPoverty,
                 text: "US",
                 stroke: {
-                    color: "blue",
+                    color: "black",
                     width: 2
                 },
-                fill: "lightblue"
+                fill: "#DB7093"
             }, ]);
 
 
@@ -2259,15 +2282,19 @@
             domStyle.set(thisDomNode,"background-color",this._activeColor);
             return resultsLocalTabReference;
         },
-
+        _scrollIntoView:function(){
+            win.scrollIntoView("button1");
+        },
         _createResultsGrids: function(data){
 
             var that = this;
             //***************************
             //Household Income
             //***************************
-            var HHIncome_Grid_Main = domConstruct.create("div",{"class":"HHIncomeGridDiv" },this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
-                var HHIncome_Grid_MainLeft = domConstruct.create("div",{"class":"HHIncomeGridLeftDiv" },HHIncome_Grid_Main,"last");
+            var HHIncome_Grid_Main = domConstruct.create("div",{"id":"HHIncomeMainContainer"+this._filterGraphicsCount,"class":"HHIncomeGridDiv" },this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
+           // var resultsInternalNav = domConstruct.create("div",{"class":"internalNav","innerHTML":"<span><b>Quick Navigation:</b> </span><span class=\"internalNavItem\">Household Income - </span><span class=\"internalNavItem\">Employment - </span><span class=\"internalNavItem\">Parcel Data</span>" },HHIncome_Grid_Main,"last");
+           // query(".internalNavItem").on("click", this._scrollIntoView);
+            var HHIncome_Grid_MainLeft = domConstruct.create("div",{"class":"HHIncomeGridLeftDiv" },HHIncome_Grid_Main,"last");
             var HHIncome_Grid_MainRight = domConstruct.create("div",{"class":"HHIncomeGridRightDiv" },HHIncome_Grid_Main,"last");
             var gridParcelNodeTitle = domConstruct.create("div",{"innerHTML":"<div class=\"filterTableHeader\">Household Income Data</div>" },HHIncome_Grid_MainLeft,"last");
             var gridHHIncomeNode = domConstruct.create("div",{id:"resultsHHIncomeDivSelection_"+this._filterGraphicsCount,"class":"filterHHIncomResults" },HHIncome_Grid_MainLeft,"last");
@@ -2296,8 +2323,9 @@
             //***************************
             //Employment
             //***************************
-            var gridParcelNodeTitle = domConstruct.create("div",{"innerHTML":"<span class=\"filterTableHeader\">Employment Data</span>" },this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
-            var gridEmploymentNode = domConstruct.create("div",{ id:"resultsEmploymentDivSelection_"+this._filterGraphicsCount,"class":"filterEmploymentResults" },this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
+            var employmentContainer = domConstruct.create("div",{"id":"employmentMainContainer"+this._filterGraphicsCount,"class":"employmentContainer"},this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
+            var gridParcelNodeTitle = domConstruct.create("div",{"innerHTML":"Employment Data","class":"filterTableHeader" },employmentContainer,"last");
+            var gridEmploymentNode = domConstruct.create("div",{ id:"resultsEmploymentDivSelection_"+this._filterGraphicsCount,"class":"filterEmploymentResults" },employmentContainer,"last");
             console.log(data[2]);
             console.log(this._employmentDataGridColumns);
 
@@ -2346,14 +2374,14 @@
 
             var resultsGridLocalReference = this._resultsEmploymentGrid[this._filterGraphicsCount];
 
-            this._createEmploymentPieChart();
+            this._createEmploymentPieChart(employmentContainer);
 
             //***************************
             //Parcel Results
             //***************************
 
 
-            var gridParcelNodeTitle = domConstruct.create("div",{"innerHTML":"<span class=\"filterTableHeader\">Parcel Data</span>" },this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
+            var gridParcelNodeTitle = domConstruct.create("div",{"id":"parcelMainContainer"+this._filterGraphicsCount,"innerHTML":"<span class=\"filterTableHeader\">Parcel Data</span>" },this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
             var gridParcelNode = domConstruct.create("div",{ id:"resultsParcelDivSelection_"+this._filterGraphicsCount,"class":"filterParcelResults" },this._resultTabs["result_"+this._filterGraphicsCount].domNode,"last");
 
             this._resultsParceldStore[this._filterGraphicsCount] = new Memory({data:data[0], idProperty: 'id'});
@@ -2753,9 +2781,10 @@
             this._toolbar = new Draw(evtObj.map);
             this._toolbar.on("draw-end", lang.hitch(this,this._handlePolygonDrawEnd));
             this._createTransparencySlider();
+            this._hideLoading();
         },
         _performQueryTasks: function (geometry, geometryType) {
-
+            this._showLoading();
             var that = this;
             this._filterGraphicsCount++;
 
@@ -2865,6 +2894,8 @@
             //need to create the arrays for the other two resonses
 
             this._updateResults([LandValueAverageArray,hHIncomeArray,employmentArray]);
+
+            this._hideLoading();
         },
         _updateResults:function(data){
 
@@ -2940,9 +2971,24 @@
                 title: "MetroView Tutorial",
                 // Create Dialog content
                 //content: "Would you like to take the tutorial?" + "<br />If not, close this window and you can simply click on the map to get started.<br /><br /><div id=\"startTutorial\"></div>&nbsp;&nbsp;<div id=\"cancelTutorial\"></div>"
-                content:"Welcome to MetroView.<p> To get started you can simply click on the map to create a two mile buffer and get the resulting data.<p>The results will be dislayed below the map<p>You can add more study areas simply by clicking on the map in different places<p></p> To customize your study area use the options in the left pane.<p>Thanks for using MetroView.</p>     "
+                content:"<b>Welcome to MetroView.</b> <p>To get started you can simply click on the map to create a two mile buffer and get the resulting data.</p><p>The results will be displayed below the map</p><p>You can add more study areas simply by clicking on the map in different places</p><p> To customize your study area use the options in the left pane.</p><p>Thanks for using MetroView.</p>     "
             });
+            var closeTutorial = function(){
+                dialog.hide();
+            };
+
+
+
+            var tutorialCloseButtonDiv = domConstruct.create("div",{"style":"float:right"},dialog.domNode);
+            var closeButton = new Button({
+                label: "O.K. Got It.",
+                onClick: closeTutorial
+            });
+
              dialog.show();
+
+            tutorialCloseButtonDiv.appendChild(closeButton.domNode);
+            closeButton.startup();
 
             //popup.open({
             //    popup: myDialog,
@@ -2951,6 +2997,8 @@
             //    style:{width: "300px"},
             //    //around: dom.byId('navbar')
             //});
+
+
 
 
             var nextTutorialPoint = function(){
@@ -2980,6 +3028,17 @@
             dialogButtonsNode.appendChild(cancelButton.domNode);
             cancelButton.startup();
 
+        },
+
+        //loading Overlay
+        _showLoading:function(){
+
+            var overlayNode = dom.byId("mainOverlay");
+            domStyle.set(overlayNode,'display','inline');
+        },
+        _hideLoading:function(){
+            var overlayNode = dom.byId("mainOverlay");
+            domStyle.set(overlayNode,'display','none');
         }
 
 

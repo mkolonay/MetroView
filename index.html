@@ -7,6 +7,9 @@
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <meta name="description" content="">
     <meta name="author" content="">
+
+
+
     <link rel="icon" href="./images/favicon.ico">
 
     <title>CURA MetroView</title>
@@ -24,13 +27,15 @@
     <![endif]-->
 
     <link rel="stylesheet" href="http://js.arcgis.com/3.14/dojo/resources/dojo.css">
-    <link rel="stylesheet" href="http://js.arcgis.com/3.14/dijit/themes/tundra/tundra.css">
+    <link rel="stylesheet" href="http://js.arcgis.com/3.14/dijit/themes/soria/soria.css">
     <link rel="stylesheet" href="http://js.arcgis.com/3.14/esri/css/esri.css">
+
 
     <link rel="stylesheet" href="http://dgrid.io/js/dgrid/css/columnset.css">
     <link rel="stylesheet" href="http://dgrid.io/js/dgrid/css/dgrid.css">
 
 
+    <!--<link rel="stylesheet" href="dist/semantic-dojo.css">-->
     <link rel="stylesheet" href="css/metroview.css" />
     <script>dojoConfig = { parseOnLoad: true,
         packages: [
@@ -49,8 +54,12 @@
 
 </head>
 
-<body class="tundra">
-<nav class="navbar navbar-inverse navbar-fixed-top">
+<body class="soria index">
+<div class="box">
+        <div id="mainOverlay" class="overlay">
+        <div class="overlayInner"><div class="overlayText">Please wait, data is loading...</div><div id="loadingOverlay"></div></div>
+    </div>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container-fluid">
         <div class="navbar-header">
             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
@@ -74,13 +83,13 @@
         </div>
     </div>
 </nav>
-<div  class="container-fluid">
+    <div  class="container-fluid">
     <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
             <ul class="nav nav-sidebar">
                 <!--<li class="active"><a href="#">Study Area Filters<span class="sr-only">(current)</span></a></li>-->
                 <li> <img src="images/CURASmall.png"></li>
-                <li><div id="filterContainer"></div></li>
+                <li><div id="filterContainer"></div><br /></li>
                 <li><div class="supported">The MetroView website is supported by a grant from the National Associaton of Realtors and by in-kind support from the Richmond Association of Realtors.</div></li>
             </ul>
         </div>
@@ -108,6 +117,7 @@
             </div>
             <div id="resultsTitlePane" data-dojo-type="dijit/TitlePane" data-dojo-props="title: 'MetroView Results'">
                 <div id="resultsTabContainer"></div>
+
             </div>
 
 
@@ -128,5 +138,9 @@
         </div>
     </div>
 </div>
+
+</div>
+
+
 </body>
 </html>
