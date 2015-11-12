@@ -73,7 +73,10 @@
   "dojo/html",//72
   "dojox/charting/plot2d/Bubble",//73
   "dojo/window",//74
-    "dojo/query",//75
+  "dojo/query",//75
+  "dojo/fx",//76
+  "dojo/dom-geometry",//77
+  "dojo/io-query",//78
   "dojox/charting/plot2d/Markers",
   "dojox/charting/axis2d/Default",
 
@@ -158,7 +161,10 @@
     html,//72
     Bubble,//73
     win,//74
-    query//75
+    query,//75
+    coreFx,//76
+    domGeom,//77
+    dojo_ioquery//78
 ) {
 
 
@@ -280,7 +286,7 @@
             {
                 "fieldName": "VMP_P1_V3_NotNull",
                 "shortFieldName": "VMP_P1_V3_NotNull",
-                "filterType": "range",
+                "filterType": "",
                 "filterOptions": [],
                 "filterRangeTop": "",
                 "filterRangeBottom": "",
@@ -296,7 +302,7 @@
             {
                 "fieldName": "VMP_P1_V4_NotNull",
                 "shortFieldName": "VMP_P1_V4_NotNull",
-                "filterType": "range",
+                "filterType": "",
                 "filterOptions": [],
                 "filterRangeTop": "",
                 "filterRangeBottom": "",
@@ -312,7 +318,7 @@
             {
                 "fieldName": "VMP_P1_V5_NotNull",
                 "shortFieldName": "VMP_P1_V5_NotNull",
-                "filterType": "range",
+                "filterType": "",
                 "filterOptions": [],
                 "filterRangeTop": "",
                 "filterRangeBottom": "",
@@ -1223,7 +1229,25 @@
             "Households_PercentBelowPoverty":14.8
         },
         //Source: U.S. Census Bureau, 2009-2013 5-Year American Community Survey
+        _filterPanelShowing:true,
+        _filterLocation:"side",//choices are top, side
+        _customToolTip:{},
+        _customToolTipState: "inline",
         _init: function () {
+
+            var query = document.URL.substring(document.URL.indexOf("?") + 1, document.URL.length);
+            var queryObject = dojo_ioquery.queryToObject(query);
+
+            ///Filter Location Section
+            //START
+            if (queryObject.hasOwnProperty('filterLocation')) {
+                this._filterLocation = queryObject.filterLocation;            };
+
+            if (this._filterLocation == "") { this._filterLocation = "side"; };
+
+            ///Filter Location Section
+            //END
+
 
 
             this._parcelDataGridColumns["VMP_P1_V12"] = {"label":"Land Use"};
@@ -1235,7 +1259,20 @@
             this._createMapElements();
             //maybe this should wait on map load?
             this._createSearch();
-            this._startUpTutorial();
+            //this._startUpTutorial();
+
+            //this._createCustomMapTooltip();
+            if(this._filterLocation == "top") {
+
+                on(dom.byId("closeFilterPanel"), "click", lang.hitch(this, function () {
+                    this._moveFilters();
+                }));
+
+            } else {
+
+                domStyle.set(dom.byId("navTopPanelContainer"), "display", "none");
+            }
+
         },
 
         /*Create things*/
@@ -1316,8 +1353,12 @@
             bc.placeAt("mapTitlePane");
             bc.startup();
 
+            if(this._filterLocation == "top"){
+                this._createFilterElementsTopNav();
+            } else {
+                this._createFilterElementsSideNav();
+            };
 
-            this._createFilterElements();
             this._createResultsTabContainer();
 
             var clickLink =  dom.byId("helpClick");
@@ -1329,9 +1370,39 @@
 
 
         },
-        _createFilterElements:function(){
+        _createFilterElementsTopNav:function(){
 
-            var filterNode = dom.byId(this._filtersNodeID);
+            var filterNode = dom.byId(this._filtersNodeID+"MapTools");
+            //create the filters and put them in the left nav section as designated by this._filterNodeID
+            var mapNodeInnerHTML = "<div id=\"selectOptions\" >" +
+                "<div class=\"mapSelectorText\">Select an area to study by: </div>" +
+                "</div>" +
+                "<br />" +
+                "<div class=\"selectToolButtons\">" +
+                "<div id=\"polyDraw\"></div>" +
+                "<div id=\"bufferDistance\"></div>" +
+                "<div id=\"localitiesTools\">" +
+                "<div id=\"localCancel\"></div>" +
+                "<div id=\"localCommit\"></div>" +
+                "</div>" +
+                "</div>";
+            var mapSelectionToolsNode = domConstruct.create("div", {"innerHTML":mapNodeInnerHTML}, filterNode, "first");
+
+            //var tpselectOptions = new TitlePane({title:"Map Selection Tools", content: "<div id=\"selectOptions\" ><div class=\"mapSelectorText\">Select an area to study by: </div></div><br /><div class=\"selectToolButtons\"><div id=\"polyDraw\"></div><div id=\"bufferDistance\"></div><div id=\"localitiesTools\"><div id=\"localCancel\"></div><div id=\"localCommit\"></div></div></div>"});
+            //filterNode.appendChild(tpselectOptions.domNode);
+            //tpselectOptions.startup();
+
+            //create the map selection tools
+            this._createMapSelectionTools();
+
+            //create the range filter options
+            var filterNodeParcels = dom.byId(this._filtersNodeID+"Parcels");
+            this._createFilters(filterNodeParcels);
+
+        },
+        _createFilterElementsSideNav:function(){
+
+            var filterNode = dom.byId(this._filtersNodeID+"Side");
             //create the filters and put them in the left nav section as designated by this._filterNodeID
 
             var tpselectOptions = new TitlePane({title:"Map Selection Tools", content: "<div id=\"selectOptions\" ><div class=\"mapSelectorText\">Select an area to study by: </div></div><br /><div class=\"selectToolButtons\"><div id=\"polyDraw\"></div><div id=\"bufferDistance\"></div><div id=\"localitiesTools\"><div id=\"localCancel\"></div><div id=\"localCommit\"></div></div></div>"});
@@ -1374,6 +1445,7 @@
 
             var that = this;
             array.forEach( this._parcelFilters, function (item, i) {
+                console.log(item);
                 switch (item.filterType) {
                     case "range":
                         that._createTextBoxRanges(item,filterNode);
@@ -1390,7 +1462,7 @@
 
 
             if(!this._filterTitlePanes["parcelPropertyType"]) {
-                this._filterTitlePanes["parcelPropertyType"] = new TitlePane({title:"Select Property Types", open:false, content: "<div id=\"parcelPropertyType\"></div>"});
+                this._filterTitlePanes["parcelPropertyType"] = new TitlePane({title:"Select Parcel Property Types", open:false, content: "<div id=\"parcelPropertyType\"></div>"});
                  filterNode.appendChild(this._filterTitlePanes["parcelPropertyType"].domNode);
             }
 
@@ -1557,6 +1629,7 @@
                  ],
                 onChange: lang.hitch(that, function(event){that._handleMapSelectionDropDownChange(event);})
             });
+
             this._selectionTypeDropdown.placeAt("selectOptions");
             this._selectionTypeDropdown.startup();
 
@@ -1568,6 +1641,7 @@
 
                     this._toolbar.activate(esri.toolbars.Draw.FREEHAND_POLYGON);
                     this._map.hideZoomSlider();
+                    this._moveFilters();
                 })
             }, "polyDraw");
             this._polygonDrawButton.startup();
@@ -1629,7 +1703,10 @@
             this._map = new Map("map", {
                 basemap: "topo",
                 center: [-77.455, 37.469],
-                zoom: 10
+                zoom: 11,
+                autoResize:true,
+                fadeOnZoom:true,
+                fitExtent:true
             });
 
 
@@ -2584,7 +2661,7 @@
             this._handleFilterChange(filterObject.fieldName,submitqueryString,"IN");
         },
         _handleMapSelectionDropDownChange: function(selectionType) {
-
+            console.log("_handleMapSelectionDropDownChange");
             switch(selectionType) {
                 case "polygon":
                     domStyle.set(this._commitLocalitySelectionButton.domNode, 'display', 'none');
@@ -2781,6 +2858,12 @@
             this._toolbar = new Draw(evtObj.map);
             this._toolbar.on("draw-end", lang.hitch(this,this._handlePolygonDrawEnd));
             this._createTransparencySlider();
+
+            // update the tooltip as the mouse moves over the map
+          //  this._map.on("mouse-move", lang.hitch(this, this._handleMapMouseMove));
+          //  this._map.on("mouse-out", lang.hitch(this, this._handleMapMouseOut));
+
+
             this._hideLoading();
         },
         _performQueryTasks: function (geometry, geometryType) {
@@ -2971,7 +3054,19 @@
                 title: "MetroView Tutorial",
                 // Create Dialog content
                 //content: "Would you like to take the tutorial?" + "<br />If not, close this window and you can simply click on the map to get started.<br /><br /><div id=\"startTutorial\"></div>&nbsp;&nbsp;<div id=\"cancelTutorial\"></div>"
-                content:"<b>Welcome to MetroView.</b> <p>To get started you can simply click on the map to create a two mile buffer and get the resulting data.</p><p>The results will be displayed below the map</p><p>You can add more study areas simply by clicking on the map in different places</p><p> To customize your study area use the options in the left pane.</p><p>Thanks for using MetroView.</p>     "
+                content:"<h2>Welcome to MetroView.</h2>" +
+                "<p>To get started you can simply click on the map to create a two mile buffer and get the resulting data.</p>" +
+                "<p>The results will be displayed below the map</p>" +
+                "<p>You can add more study areas simply by clicking on the map in different places</p>" +
+                "<p> To customize your study area use the Map Selection Tools in the left pane.</p>" +
+                "<p>Some other options to customize your study are include:" +
+                "<ul>" +
+                "<li>Drawing a freehand polygon - of any area you like.</li>" +
+                "<li>Selecting by Counties.</li>" +
+                "<li>Searching by Address.</li>" +
+                "</ul>" +
+                "<p>You may also filter the Parcel Map and Results data </p>" +
+                "</p><p>Thanks for using MetroView.</p>     "
             });
             var closeTutorial = function(){
                 dialog.hide();
@@ -3032,13 +3127,89 @@
 
         //loading Overlay
         _showLoading:function(){
-
+            console.log("_showLoading");
             var overlayNode = dom.byId("mainOverlay");
             domStyle.set(overlayNode,'display','inline');
+
+
         },
         _hideLoading:function(){
+            console.log("_hideLoading");
             var overlayNode = dom.byId("mainOverlay");
             domStyle.set(overlayNode,'display','none');
+        },
+
+        _moveFilters:function(){
+            var amt = 650;
+            if(this._filterPanelShowing){
+                amt = -1*amt;
+                this._filterPanelShowing = false;
+                dom.byId("closeFilterPanel").innerHTML = "Show Study Selection Options ";
+
+            } else {
+                this._filterPanelShowing = true
+                dom.byId("closeFilterPanel").innerHTML = "Close Study Selection Options ";
+            }
+                coreFx.slideTo({
+                    node: "navTopPanelContainer",
+                    top: (domGeom.getMarginBox("navTopPanelContainer").t + amt).toString(),
+                   /* left: (domGeom.getMarginBox("navTopPanel").l + amt).toString(),*/
+                    unit: "px"
+                }).play();
+
+
+
+ /*           on(dom.byId("slideRightButton"), "click", function(){
+                slideIt(200);
+            });
+            on(dom.byId("slideLeftButton"), "click", function(){
+                slideIt(-200);
+            });*/
+
+        },
+
+        _createCustomMapTooltip: function () {
+            console.log("this._map");
+            console.log(this._map);
+            // create node for the tooltip
+            var tip = "This is a tooltip.";
+            this._customToolTip = domConstruct.create("div", { "class": "tooltip", "innerHTML": tip }, this._map.container);
+            domStyle.set(this._customToolTip, "position", "fixed");
+            domStyle.set(this._customToolTip, "display", "none");
+
+        },
+        _handle_customToolTip: function (enable, tooltipText) {
+            html.set(this._customToolTip, tooltipText);
+            if (enable) {
+                this._customToolTipState = "inline";
+            } else {
+                this._customToolTipState = "none";
+            };
+        },
+        _handleMapMouseOut: function (evt) {
+            //this._turnOffDrawing();
+            domStyle.set(this._customToolTip, "display", "none");
+        },
+        _handleMapMouseMove: function (evt) {
+            console.log(evt);
+            var px, py;
+            if (evt.clientX || evt.pageY) {
+                px = evt.clientX;
+                py = evt.clientY;
+            } else {
+                px = evt.clientX + dojo.body().scrollLeft - dojo.body().clientLeft;
+                py = evt.clientY + dojo.body().scrollTop - dojo.body().clientTop;
+            };
+
+            domStyle.set(this._customToolTip, "display", "none");
+            domStyle.set(this._customToolTip, "left", (px + 15) + "px");
+            domStyle.set(this._customToolTip, "top", (py) + "px");
+            //domStyle.set(this._customToolTip, "display", this._customToolTipState);
+            domStyle.set(this._customToolTip, "display", this._customToolTipState);
+            console.log(this._customToolTip);
+
+
+
         }
 
 

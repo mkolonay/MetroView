@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html >
+<head>
+
+    <link rel="stylesheet" href="http://js.arcgis.com/3.14/dijit/themes/claro/claro.css">
+
+    <script>dojoConfig = {parseOnLoad: true}</script>
+    <script src='http://js.arcgis.com/3.14'></script>
+
+    <script>
+        require(["dojo/fx", "dojo/dom", "dojo/dom-geometry", "dojo/on", "dojo/domReady!"],
+                function(coreFx, dom, domGeom, on){
+
+                    function slideIt(amt){
+                        coreFx.slideTo({
+                            node: "basicNode",
+                            top: (domGeom.getMarginBox("basicNode").t + amt).toString(),
+                            left: (domGeom.getMarginBox("basicNode").l + amt).toString(),
+                            unit: "px"
+                        }).play();
+                    }
+
+                    on(dom.byId("slideRightButton"), "click", function(){
+                        slideIt(200);
+                    });
+                    on(dom.byId("slideLeftButton"), "click", function(){
+                        slideIt(-200);
+                    });
+                });
+    </script>
+</head>
+<body class="claro">
+<button type="button" id="slideLeftButton">Slide It Left!</button>
+<button type="button" id="slideRightButton">Slide It Right!</button>
+<br />
+<br />
+<div style="width: 100%; height: 120px;">
+    <div id="basicNode" style="width: 100px; height: 100px; background-color: red; position: absolute;">
+        Some cool stuff about the site. How to get started. Whatever.
+
+    </div>
+    <div>What Happens to me?</div>
+</div>
+</body>
+</html>

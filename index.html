@@ -8,9 +8,10 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-
-
-    <link rel="icon" href="./images/favicon.ico">
+ <!--   <link rel="icon" href="./images/favicon.ico">-->
+    <link rel="icon"
+          type="image/png"
+          href="/images/medal.png" />
 
     <title>CURA MetroView</title>
 
@@ -56,8 +57,20 @@
 
 <body class="soria index">
 <div class="box">
+    <div class="navTopPanelContainer" id="navTopPanelContainer">
+        <h2>Welcome to MetroView.</h2>
+        <p>To get started, choose one of the options from the dropdown to select a study area:</p>
+        <div id="filterContainerMapTools"></div>
+        <p>You can refine your analysis on parcel data with the following filters:</p>
+        <div id="filterContainerParcels"></div>
+        <p>To examine more areas simply select more from the map. Your new results will be added in the results section.</p>
+
+
+        <p>Thanks for using MetroView.</p>
+            <div class="closeFilterPanel" id="closeFilterPanel">Close Study Selection Options</div>
+    </div>
         <div id="mainOverlay" class="overlay">
-        <div class="overlayInner"><div class="overlayText">Please wait, data is loading...</div><div id="loadingOverlay"></div></div>
+        <div class="overlayInner"><div class="overlayImage" ><img src="images/CURASmall.png" height="84" width="200"></div> <div class="overlayText">Please wait, data is loading...</div><div id="loadingOverlay"></div></div>
     </div>
     <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container-fluid">
@@ -89,7 +102,7 @@
             <ul class="nav nav-sidebar">
                 <!--<li class="active"><a href="#">Study Area Filters<span class="sr-only">(current)</span></a></li>-->
                 <li> <img src="images/CURASmall.png"></li>
-                <li><div id="filterContainer"></div><br /></li>
+                <li><div id="filterContainerSide"></div><br /></li>
                 <li><div class="supported">The MetroView website is supported by a grant from the National Associaton of Realtors and by in-kind support from the Richmond Association of Realtors.</div></li>
             </ul>
         </div>
