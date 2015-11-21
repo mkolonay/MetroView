@@ -40,6 +40,7 @@ html, body {
 .mapTitlepane{
 
     /*height: 800px;*/
+    overflow: hidden;
 }
 
 .mapBorderContainer{
@@ -55,8 +56,7 @@ html, body {
 }
 
 .map {
-
-    height:400px
+    height:100%;
 }
 
 .filterTextBoxRanges{
@@ -91,7 +91,7 @@ html, body {
 }
 
 .mapSelectorText{
- padding-bottom: 10px;
+    padding-bottom: 10px;
 }
 
 .mapSelector{
@@ -128,12 +128,12 @@ html, body {
 .tundra .dijitDialogUnderlay { background:#000; }
 
 /*.navbar-fixed-top{*/
-    /*left:272px;*/
+/*left:272px;*/
 /*}*/
 
 /*.sidebar{*/
 /*top:100px;*/
-    /*}*/
+/*}*/
 .main{padding: 10px 0px 0px 0px}
 
 /*h2{margin-top: 0px}*/
@@ -147,7 +147,7 @@ html, body {
 }*/
 
 td {
-     vertical-align: top;
+    vertical-align: top;
 }
 
 .pieChartTitle {
@@ -174,7 +174,7 @@ td {
     height:400px;
 }
 .filterChartsHHIncomeBar{
-  }
+}
 
 .chartsMain{
     clear: both;
@@ -233,7 +233,7 @@ td {
 
 }
 .parcelChartsClear{
- clear: both;
+    clear: both;
 }
 
 .internalNav{
@@ -258,7 +258,7 @@ td {
 
 .LocalitySelectionButton span{
     width: 150px;
-    }
+}
 
 
 
@@ -342,4 +342,27 @@ td {
 
 .navbar-fixed-bottom, .navbar-fixed-top{
     z-index: 999;
+}
+
+.transparencySlider{
+    width:30%;
+    margin:auto;
+    position: relative;
+    top:-100px;
+}
+
+.logoInMap {
+    float:left;
+    position: relative;
+    top:-100px;
+    background-color: white;
+}
+.soria .dijitTitlePaneTitle {
+    background: #cccccc;
+    /* background: #fff url("images/titleBar.png") repeat-x top left;*/
+    border: 1px solid #bfbfbf;
+    padding: 3px 4px;
+    font-size: 2.0em;
+    font-weight: bold;
+    color: #6d6d6d;
 }

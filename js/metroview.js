@@ -1345,7 +1345,13 @@
             // create a ContentPane as the center pane in the BorderContainer
             var cp2 = new ContentPane({
                 region: "center",
-                content: "<div id=\"map\"></div><br /><div><div>Parcel Transparency</div></div><div id=\"transparencySlider\"></div></div>"
+                content: "<div id=\"map\"></div>" +
+                "<br />" +
+                "    <div class=\"logoInMap\"><img src=\"images/CURASmall.png\"></div>" +
+                "   <div class=\"transparencySlider\">" +
+                "           <div>Parcel Transparency</div>" +
+                "       <div id=\"transparencySlider\"></div>" +
+                "   </div>"
             });
             bc.addChild(cp2);
 
@@ -2878,8 +2884,11 @@
 
             //parcel data.
             query.geometry = geometry;
+            console.log(geometry);
             query.returnGeometry = false;
             query.outStatistics = that._parcelStatisticsDefinition;
+            console.log("that._parcelStatisticsDefinitionthat._parcelStatisticsDefinition");
+            console.log(that._parcelStatisticsDefinition);
             query.groupByFieldsForStatistics = that._parcelGroupByFields;
             query.where = that._parcelWhereClause;
             var parcelDeferred = that._queryTask.execute(query);//, lang.hitch(that, "_selectFromService"));
@@ -2937,6 +2946,8 @@
         _selectFromService: function (response) {
 
             var LandValueAverageArray = array.map(response[0][1].features, function(item,index){
+                console.log("item");
+                console.log(item);
                 item.attributes.VMP_P1_V3_avg = Math.round(item.attributes.VMP_P1_V3_sum / item.attributes.VMP_P1_V3_NotNull_sum);
                 item.attributes.VMP_P1_V4_avg = item.attributes.VMP_P1_V4_sum / item.attributes.VMP_P1_V4_NotNull_sum;
                 item.attributes.VMP_P1_V5_avg = item.attributes.VMP_P1_V5_sum / item.attributes.VMP_P1_V5_NotNull_sum;
