@@ -1,15 +1,25 @@
 html, body {
     width: 100%;
-    height: 1000px;
+   /* height: 1000px;*/
     margin: 0;
 
 }
 
+.welcomeText{
+    font-size: 1.1667em;
+    font-weight: bold;
+    line-height: 1.286em;
+    color: #882541;
+
+}
 #layoutContainer {
     width: 100%;
     height: 100%;
 }
 
+.mainContainer{
+   /* height: 800px;*/
+}
 
 .filterRanges {
     /*float:left;*/
@@ -117,6 +127,8 @@ html, body {
     padding-top: 10px;
     padding-bottom: 10px;
     font-weight: bold;
+    clear: both;
+    border-top:2px solid;
 }
 
 .supported{
@@ -166,6 +178,7 @@ td {
 
 .pieChartTitle_Poverty
 {
+
     font-size:large;
     text-align: center;
 }
@@ -189,12 +202,16 @@ td {
 .chartsSubHHIncomePercentPoverty{}
 .HHIncomeGridDiv{
     width:100%;
+    margin-top:10px;
+    margin-bottom: 10px;
 }
 .HHIncomeGridLeftDiv{
     width:65%;
     float:left;
 }
 .HHIncomeGridRightDiv{
+    position:relative;
+    top:5px;
     width:35%;
     float:right;
 }
@@ -327,16 +344,17 @@ td {
 }
 
 .closeFilterPanel{
-    background-color: #4c53ad;
-    color:white;
+    background-color: darkgrey;
+    color:black;
     font-size: large;
     width:350px;
     position: absolute;
     left:75px;
     bottom: -20px;
     border-radius: 25px;
-    border: 2px solid #4c53ad;
+    border: 2px solid black;
     text-align: center;
+    cursor:pointer;
 
 }
 
@@ -344,25 +362,139 @@ td {
     z-index: 999;
 }
 
+.mapMainContainer{
+
+/*    height:1000px;
+    position: relative;*/
+}
+
+
+.resultTab{
+    height:1000px;
+}
 .transparencySlider{
-    width:30%;
-    margin:auto;
-    position: relative;
-    top:-100px;
+    display: inline-block;
+    width:220px;
+    vertical-align: middle;
+
 }
 
 .logoInMap {
-    float:left;
-    position: relative;
-    top:-100px;
-    background-color: white;
+    display: inline-block;
+    width:200px;
+    padding:5px;
+    vertical-align: middle;
+
 }
+
+.addressSearch {
+    display: inline-block;
+    width:310px;
+    padding:5px;
+    vertical-align: middle;
+}
+
+.mapBottom{
+    min-width: 800px;
+    background-color: #96ACA8;
+    border: 2px solid  #3C4543;
+    height:90px;
+    text-align: justify;
+    position:relative;
+    top:-100px;
+
+}
+
+.mapBottom:after {
+    content: '';
+    width: 100%; /* Ensures there are at least 2 lines of text, so justification works */
+    display: inline-block;
+}
+
 .soria .dijitTitlePaneTitle {
-    background: #cccccc;
+    background: #882541;
     /* background: #fff url("images/titleBar.png") repeat-x top left;*/
     border: 1px solid #bfbfbf;
     padding: 3px 4px;
-    font-size: 2.0em;
+    /*font-size: 1.0em;*/
+    /*font-weight: bold;*/
+    color: #FAFAE9;
+
+    /*F2E7C4  Yellow*/
+    /*780727  Red*/
+
+}
+
+.soria .dijitTitlePaneTextNode {
+    color: #EBDCB4;
+}
+
+
+
+.studyAreaMap{
+
+    width:100%;
+    height:250px;
+}
+
+.shadow {
+    padding: 8px;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    -moz-box-shadow: 0px 6px 3px -3px #888;
+    -webkit-box-shadow: 0px 6px 3px -3px #888;
+    box-shadow: 0px 6px 3px -3px #888;
+    background-color: white;
+    border: solid 4px #80a8c1;
+}
+
+.selectToolContainer{
+    float:left;
+    padding-bottom: 10px;
+}
+
+.selectToolText{
+    width:150px;
+}
+.selectToolImage{
+    height:100px;
+    width:100px;
+
+}
+
+.selectToolHelper{
+    padding-left:10px;
+}
+
+.selectToolOverallContainer{
+    clear: both;
+}
+
+/*****************************BootStrap Overrides*/
+
+.navbar-inverse{
+    background-color: #96ACA8;
+    border-color: #3C4543;
+
+}
+
+.navbar-inverse .navbar-brand{
+    color:#3C4543;
+    font-size: 28px;
     font-weight: bold;
-    color: #6d6d6d;
+}
+
+.navbar-inverse .navbar-nav > li > a {
+    color:#3C4543;
+
+}
+
+
+@media print {
+    .navTopPanelContainer{
+        display:none;
+    }
+    .resultTab{
+        height:5500px;
+    }
 }

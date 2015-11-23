@@ -17,47 +17,54 @@
             height: 100%;
         }
     </style>
-    <script>dojoConfig = {parseOnLoad: true}</script>
+    <!--<script>dojoConfig = {parseOnLoad: true}</script>-->
     <script src="http://js.arcgis.com/3.13/"></script>
 
     <script>
         require([
-     "dijit/layout/BorderContainer", "dijit/layout/ContentPane", "dijit/TitlePane",//12
+     "dijit/layout/BorderContainer", "dijit/layout/ContentPane", "dijit/TitlePane","dojo/parser",
      "dojo/domReady!"
-        ], function (BorderContainer, ContentPane) {
-            // create a BorderContainer as the top widget in the hierarchy
-            var bc = new BorderContainer({
-                style: "height: 300px; width: 500px;"
+        ], function (BorderContainer, ContentPane,TitlePane,parser) {
+
+            parser.parse().then(function(instances){
+
+
+
+                // create a BorderContainer as the top widget in the hierarchy
+                var bc = new BorderContainer({
+                    style: "height: 300px; width: 500px;"
+                });
+
+                // create a ContentPane as the left pane in the BorderContainer
+                var cp1 = new ContentPane({
+                    region: "left",
+                    style: "width: 100px",
+                    content: "hello world"
+                });
+                bc.addChild(cp1);
+
+                // create a ContentPane as the center pane in the BorderContainer
+                var cp2 = new ContentPane({
+                    region: "center",
+                    content: "how are you?"
+                });
+                bc.addChild(cp2);
+
+                // put the top level widget into the document, and then call startup()
+                bc.placeAt("mapTitlePane");
+                bc.startup();
+                console.log(bc);
             });
 
-            // create a ContentPane as the left pane in the BorderContainer
-            var cp1 = new ContentPane({
-                region: "left",
-                style: "width: 100px",
-                content: "hello world"
-            });
-            bc.addChild(cp1);
 
-            // create a ContentPane as the center pane in the BorderContainer
-            var cp2 = new ContentPane({
-                region: "center",
-                content: "how are you?"
             });
-            bc.addChild(cp2);
 
-            // put the top level widget into the document, and then call startup()
-            bc.placeAt("mapTitlePane");
-            bc.startup();
-        });
     </script>
 </head>
 <body class="claro">
 
     <div id="mapTitlePane" data-dojo-type="dijit/TitlePane" data-dojo-props="title: 'MetroView Map'">
         This is inside the title pane
- 
-
-
     </div>
 
 

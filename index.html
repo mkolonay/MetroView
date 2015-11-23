@@ -16,7 +16,7 @@
     <title>CURA MetroView</title>
 
     <!-- Bootstrap core CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/bootstrap.css">
 
     <!-- Custom styles for this template -->
     <link href="./css/dashboard.css" rel="stylesheet">
@@ -38,7 +38,8 @@
 
     <!--<link rel="stylesheet" href="dist/semantic-dojo.css">-->
     <link rel="stylesheet" href="css/metroview.css" />
-    <script>dojoConfig = { parseOnLoad: true,
+    <script>dojoConfig = {parseOnLoad: true,
+        debugAtAllCosts: true,
         packages: [
             {
                 name: 'dgrid',
@@ -58,11 +59,12 @@
 <body class="soria index">
 <div class="box">
     <div class="navTopPanelContainer" id="navTopPanelContainer">
-        <h2>Welcome to MetroView.</h2>
-        <p>To get started, choose one of the options from the dropdown to select a study area:</p>
+        <span class="welcomeText">Welcome to MetroView.</span>
+        <p>To get started, choose one of the options from below to select a study area:</p>
         <div id="filterContainerMapTools"></div>
-        <p>You can refine your analysis on parcel data with the following filters:</p>
-        <div id="filterContainerParcels"></div>
+        <br />
+        <p style="clear:both;">You can also refine your analysis on parcel data with the filters to the top right in the map.</p>
+
         <p>To examine more areas simply select more from the map. Your new results will be added in the results section.</p>
 
 
@@ -70,7 +72,7 @@
             <div class="closeFilterPanel" id="closeFilterPanel">Close Study Selection Options</div>
     </div>
         <div id="mainOverlay" class="overlay">
-        <div class="overlayInner"><div class="overlayImage" ><img src="images/CURASmall.png" height="84" width="200"></div> <div class="overlayText">Please wait, data is loading...</div><div id="loadingOverlay"></div></div>
+        <div class="overlayInner"><div class="overlayImage" ><img src="images/CURASmall.png" height="84" width="200"></div> <div class="overlayText">Please wait, loading data...</div><div id="loadingOverlay"></div></div>
     </div>
     <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container-fluid">
@@ -91,7 +93,6 @@
             </ul>
             <form class="navbar-form navbar-right">
                 <!--<input type="text" class="form-control" placeholder="Search...">-->
-                <div id="search"></div>
             </form>
         </div>
     </div>
@@ -108,40 +109,49 @@
         </div>-->
         <div class="col-sm-12 col-md-12  main">
             <br /><br /><br />
-            <div id="mapTitlePane" data-dojo-type="dijit/TitlePane" data-dojo-props="title: 'Map','class':'mapTitlepane'">
-                <div style="position:absolute; right:45px; top:107px; z-Index:999;">
-                    <div data-dojo-type="dijit/TitlePane" data-dojo-props="title:'Switch Basemap', closable:false, open:false">
-                        <div data-dojo-type="dijit/layout/ContentPane" style="width:380px; height:280px; overflow:auto;">
-                            <div id="basemapGallery"></div>
+
+            <div id="mainContainer"></div>
+
+           <!-- <div id="resultsTabContainer" data-dojo-type="dijit/layout/TabContainer" style="width: 100%; height: 100%;">
+
+                &lt;!&ndash;Map Tab************************&ndash;&gt;
+                <div id="mapTitlePane" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="title: 'Map','class':'mapTitlepane'">
+                    <div style="position:absolute; right:45px; top:107px; z-Index:999;">
+                        <div data-dojo-type="dijit/TitlePane" data-dojo-props="title:'Switch Basemap', closable:false, open:false">
+                            <div data-dojo-type="dijit/layout/ContentPane" style="width:380px; height:280px; overflow:auto;">
+                                <div id="basemapGallery"></div>
+                            </div>
+                        </div>
+                        <div data-dojo-type="dijit/TitlePane" data-dojo-props="title:'Map Legend', closable:false, open:false">
+                            <div data-dojo-type="dijit/layout/ContentPane" style="width:380px; height:280px; overflow:auto;">
+                                <div id="legendDiv"></div>
+                            </div>
+                        </div>
+                        <div data-dojo-type="dijit/TitlePane" data-dojo-props="title:'Map Features', closable:false, open:false">
+                            <div data-dojo-type="dijit/layout/ContentPane" style="width:380px; height:280px; overflow:auto;">
+                                <div id="featuresDiv"></div>
+                            </div>
                         </div>
                     </div>
-                    <div data-dojo-type="dijit/TitlePane" data-dojo-props="title:'Map Legend', closable:false, open:false">
-                        <div data-dojo-type="dijit/layout/ContentPane" style="width:380px; height:280px; overflow:auto;">
-                            <div id="legendDiv"></div>
-                        </div>
-                    </div>
-                    <div data-dojo-type="dijit/TitlePane" data-dojo-props="title:'Map Features', closable:false, open:false">
-                        <div data-dojo-type="dijit/layout/ContentPane" style="width:380px; height:280px; overflow:auto;">
-                            <div id="featuresDiv"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div id="resultsTitlePane" data-dojo-type="dijit/TitlePane" data-dojo-props="title: 'Results'">
-                <div id="resultsTabContainer"></div>
+                 </div>
+                &lt;!&ndash;Results Tabs *******************************&ndash;&gt;
+                <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="title: 'Results'">
+                    &lt;!&ndash;<div id="resultsTabContainer"></div>&ndash;&gt;
+                </div>-->
 
             </div>
+
+
+
+
+
 
 
       <!--      <h2 class="sub-header">To Do:</h2>
             <ul>
                 <li>In each result section list filters that were active</li>
-                <li>Clean up UX - CURA colors? Other copy they want in the page? I'm not sold on some of the filter aesthetics</li>
                 <li>Improve map experience - limit parcel view scale - maybe caching? Symbol levels?</li>
-                <li>Test adding labor data to framework</li>
-                <li>CSS for print pages</li>
-                <li>wire up regional selection option</li>
-                <li>Move poly draw and search results into results count</li>
+                               <li>CSS for print pages</li>
                 <li>Add Overlay features to map</li>
                 <li>Clean up numbers in charts</li>
                 <li>Zoom to select polygon when tab is selected</li>
