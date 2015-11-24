@@ -1367,7 +1367,7 @@
                     "<div id=\"ovWin\" class=\"shadow\" style=\"position:absolute; right:35px; bottom:125px; z-Index:998; width:175px;height:150px; \">"+
                     "<div id=\"overviewDiv\" style=\"width:100%;height:100%;\"></div>"+
                     "</div>"+
-                    "<div id=\"mapToolsWin\" class=\"shadow\" style=\"position:absolute; right:35px; top:5px; z-Index:998; width:175px;height:150px; \">"+
+                    "<div id=\"mapToolsWin\" class=\"shadow\" style=\"position:absolute; right:35px; top:5px; z-Index:998; /*width:175px;height:150px;*/ \">"+
                     "<div id=\"filterContainerParcels\" style=\"width:100%;height:100%;\"></div>"+
                     "</div>" +
                     "           </div>" +
@@ -1423,7 +1423,7 @@
                 var filterNode = dom.byId(this._filtersNodeID+"MapTools");
                 //create the filters and put them in the left nav section as designated by this._filterNodeID
                 var mapNodeInnerHTML = "<div id=\"selectOptions\" >" +
-                    "<div class=\"mapSelectorText\">Select an area to study by: </div>" +
+                    "<div><span class=\"redEmphasis\">Select</span> an area to study by: </div><br />" +
                     "</div>";// +
                     /*"<br />" +
                     "<div class=\"selectToolButtons\">" +
@@ -1443,9 +1443,7 @@
                 //create the map selection tools
                 this._createMapSelectionTools();
 
-                //create the range filter options
-                var filterNodeParcels = dom.byId(this._filtersNodeID+"Parcels");
-                this._createFilters(filterNodeParcels);
+
 
             },
             _createFilterElementsSideNav:function(){
@@ -1461,7 +1459,7 @@
                 this._createMapSelectionTools();
 
                 //create the range filter options
-                this._createFilters(filterNode);
+                this._createMapTools(filterNode);
 
             },
             _createResultsTabContainer: function(){
@@ -1487,9 +1485,12 @@
                     }
                 }, "transparencySlider").startup();
             },
-            _createFilters: function (filterNode) {
-
+            _createMapTools: function (filterNode) {
                 var that = this;
+
+                this._createBasemapGallery(filterNode);
+                this._createMapLegendLfunction(filterNode);
+
                 array.forEach( this._parcelFilters, function (item, i) {
 
                     switch (item.filterType) {
@@ -1503,6 +1504,7 @@
 
                     }
                 });
+
             },
             _createMultiSelect_Grid: function (filterObject,filterNode) {
                 var that = this;
@@ -1571,6 +1573,71 @@
                 myMultiSelect.set("value", [00]);
 
 
+
+
+            },
+            _createBasemapGallery:function(filterNode){
+
+                var basemapGalleryTitlePane = new TitlePane({
+                        title: "Change Basemap",
+                        open:false
+                    });
+                    filterNode.appendChild(basemapGalleryTitlePane.domNode);
+
+                var basemapGalleryContentPane = new ContentPane({
+                    content:"<div id=\"basemapGallery\"></div>",
+                    style:"width:380px; height:280px; overflow:auto;"
+                });
+                basemapGalleryContentPane.placeAt(basemapGalleryTitlePane);
+                basemapGalleryContentPane.startup();
+
+                //create the basemap gallery object. this will allow the users to change the basemaps. ESRI defaults here.
+                this._basemapGallery = new BasemapGallery({
+                    showArcGISBasemaps: true,
+                    map: this._map
+                }, "basemapGallery");
+                this._basemapGallery.startup();
+                this._basemapGallery.on("error", function (msg) {
+                    console.log("basemap gallery error:  ", msg);
+                });
+
+                basemapGalleryTitlePane.startup();
+
+
+
+            },
+            _createMapLegendLfunction:function(filterNode){
+
+                var that = this;
+
+
+                var legendTitlePane = new TitlePane({
+                    title: "Map Legend",
+                    open:false
+                });
+                filterNode.appendChild(legendTitlePane.domNode);
+
+                var legendGalleryContentPane = new ContentPane({
+                    content:"<div id=\"legendDiv\"></div>",
+                    style:"width:380px; height:280px; overflow:auto;"
+                });
+                legendGalleryContentPane.placeAt(legendTitlePane);
+                legendGalleryContentPane.startup();
+
+
+
+                legendTitlePane.startup();
+
+
+                //add the legend
+                this._map.on("layer-add-result", function (evt) {
+                    var legendDijit = new esri_Legend({
+                        map: that._map//,
+                        // layerInfos: evt.layer.layerInfos[1]
+                    }, "legendDiv");
+                    legendDijit.startup();
+
+                });
 
 
             },
@@ -1847,15 +1914,7 @@
                 console.log("overviewMapDijitoverviewMapDijitoverviewMapDijit");
                 console.log(overviewMapDijit);
 
-                //add the legend
-                this._map.on("layer-add-result", function (evt) {
-                    var legendDijit = new esri_Legend({
-                        map: that._map//,
-                        // layerInfos: evt.layer.layerInfos[1]
-                    }, "legendDiv");
-                    legendDijit.startup();
 
-                });
                 this._map.on("load", lang.hitch(this,this._initTools));
 
 
@@ -1955,15 +2014,7 @@
 
                     }
                 });
-                //create the basemap gallery object. this will allow the users to change the basemaps. ESRI defaults here.
-                this._basemapGallery = new BasemapGallery({
-                    showArcGISBasemaps: true,
-                    map: this._map
-                }, "basemapGallery");
-                this._basemapGallery.startup();
-                this._basemapGallery.on("error", function (msg) {
-                    console.log("basemap gallery error:  ", msg);
-                });
+
 
 
 
@@ -2954,6 +3005,11 @@
 
 
             _initTools: function (evtObj) {
+
+                //create the range filter options
+                var mapToolsNode = dom.byId(this._filtersNodeID+"Parcels");
+                this._createMapTools(mapToolsNode);
+
                 this._toolbar = new Draw(evtObj.map);
                 this._toolbar.on("draw-end", lang.hitch(this,this._handlePolygonDrawEnd));
                 this._createTransparencySlider();
