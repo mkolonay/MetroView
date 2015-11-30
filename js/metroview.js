@@ -291,7 +291,7 @@
                 {
                     "fieldName": "VMP_P1_V3_NotNull",
                     "shortFieldName": "VMP_P1_V3_NotNull",
-                    "filterType": "",
+                    "filterType": "noFilter",
                     "filterOptions": [],
                     "filterRangeTop": "",
                     "filterRangeBottom": "",
@@ -307,7 +307,7 @@
                 {
                     "fieldName": "VMP_P1_V4_NotNull",
                     "shortFieldName": "VMP_P1_V4_NotNull",
-                    "filterType": "",
+                    "filterType": "noFilter",
                     "filterOptions": [],
                     "filterRangeTop": "",
                     "filterRangeBottom": "",
@@ -323,7 +323,7 @@
                 {
                     "fieldName": "VMP_P1_V5_NotNull",
                     "shortFieldName": "VMP_P1_V5_NotNull",
-                    "filterType": "",
+                    "filterType": "noFilter",
                     "filterOptions": [],
                     "filterRangeTop": "",
                     "filterRangeBottom": "",
@@ -1338,12 +1338,20 @@
                             StatisticsDefinition.push(localSsatisticDefinition);
                             break;
                         default:
-
+                            array.forEach( statTypes, function (itemTypes, iType) {
+                                var localSsatisticDefinition = new StatisticDefinition();
+                                localSsatisticDefinition.onStatisticField = itemFilters.fieldName;
+                                localSsatisticDefinition.outStatisticFieldName = itemFilters.shortFieldName+"_"+itemTypes;
+                                localSsatisticDefinition.statisticType = itemTypes;
+                                StatisticsDefinition.push(localSsatisticDefinition);
+                            });
+                            break;
                     }
                 });
 
 
-
+                console.log("StatisticsDefinitionStatisticsDefinitionStatisticsDefinitionStatisticsDefinition");
+                console.log(StatisticsDefinition);
 
 
 
@@ -1362,7 +1370,7 @@
 
                 var mapTab = new ContentPane({
                     title:"Map Selection",
-                    style: "height:"+(this._initialWindowHeight - 150) +"px;width:100%;",
+                    style: "height:"+(this._initialWindowHeight - 100) +"px;width:100%;",
                     content: "   <div id=\"map\">" +
                     "<div id=\"ovWin\" class=\"shadow\" style=\"position:absolute; right:35px; bottom:125px; z-Index:998; width:175px;height:150px; \">"+
                     "<div id=\"overviewDiv\" style=\"width:100%;height:100%;\"></div>"+
@@ -2865,6 +2873,7 @@
                 });
             },
             _handleCountyCommit:function(){
+                var newRandomColors = this._generateColor();
                 console.log("Starting county commit...");
                 console.log(this._localitiesPreCommitGraphics.length);
                 if(this._localitiesPreCommitGraphics.length > 0) {
@@ -3165,7 +3174,15 @@
 
                 query.groupByFieldsForStatistics = that._parcelGroupByFields;
                 query.where = that._parcelWhereClause;
+
+                console.log("query");
+                console.log(query);
+
                 var parcelDeferred = that._queryTask.execute(query);//, lang.hitch(that, "_selectFromService"));
+                that._queryTask.execute(query,lang.hitch(that, function(results){
+                    console.log("isolatedResults");
+                    console.log(results);
+                }));
 
                 //need to set up a set of ordered defers here
                 //HHIncome data.
@@ -3185,6 +3202,8 @@
                 var dl = new DeferredList([parcelDeferred, HHIncomeDeferred,employmentDeferred]);
 
                 dl.then(lang.hitch(that,function(result){
+                    console.log("RESULT");
+                    console.log(result);
                     this._selectFromService(result);
                 }));
 
@@ -3219,8 +3238,12 @@
             },
             _selectFromService: function (response) {
 
-                var LandValueAverageArray = array.map(response[0][1].features, function(item,index){
 
+                console.log("LandValueAverageArray");
+                console.dir(response);
+                var LandValueAverageArray = array.map(response[0][1].features, function(item,index){
+                    console.log("itemitemitemitemitem");
+                    console.log(item);
 
                     item.attributes.VMP_P1_V3_avg = Math.round(item.attributes.VMP_P1_V3_sum / item.attributes.VMP_P1_V3_NotNull_sum);
                     item.attributes.VMP_P1_V4_avg = item.attributes.VMP_P1_V4_sum / item.attributes.VMP_P1_V4_NotNull_sum;
@@ -3426,7 +3449,7 @@
             },
 
             _moveFilters:function(){
-                var amt = 650;
+                var amt = 600;
                 if(this._filterPanelShowing){
                     amt = -1*amt;
                     this._filterPanelShowing = false;
